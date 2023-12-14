@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+import subprocess
+import sys
+
+from typing import Optional
+
+
+#: Is bat available?
+HAS_BAT = shutil.which('bat') is not None
+
+#: A delimiter to use to separate arguments into path and line number
+DELIMITER = os.getenv('FZF_PREVIEW_DELIMITER', None)
+
+#: The number of lines to display if a current line is provided.
+LINES = (shutil.get_terminal_size().lines - 4)
+
+def main(*args):
+    for arg in args:
+        if DELIMITER is not None and DELIMITER in arg:
+            path, line, *r = arg.split(DELIMITER)
+            line = int(line)
+        else:
+            path = arg
+            line = None
+        handle(path, line)
+
+
+def handle(path: str, line: Optional[int]=None):
+    if HAS_BAT and line is not None:
+        c = max(line, LINES // 2 + 1)
+        n = c - LINES // 2
+        m = c + LINES // 2
+
+        subprocess.check_call([
+            'bat',
+            '--force-colorization',
+            '--highlight-line', str(line),
+            '--line-range', '{}:{}'.format(n, m),
+            path])
+    elif HAS_BAT:
+        subprocess.check_call([
+            'bat',
+            '--force-colorization',
+            path])
+    else:
+        subprocess.check_call([
+            'cat',
+            path])
+
+
+if __name__ == '__main__':
+    main(sys.argv[1])
