@@ -1,0 +1,3 @@
+# Ignore local project files
+.tmux-project
+.vimrc

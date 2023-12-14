@@ -1,0 +1,78 @@
+##
+# Determines whether the current window has a pane with of specific type.
+#
+# This is true if the tmux window option designated by $2 is set to an existing
+# pane.
+#
+# Arguments:
+# $1: The ID of the window to check.
+# $2: The type of pane.
+tmux_project_has_pane() {
+    local window="$1"
+    local var="$2"
+    local pane_id="$(tmux show-window-option -v -t "$window" "$var" \
+        2>/dev/null)"
+    [ -n "$pane_id" ] && tmux has-session -t "$pane_id"
+}
+
+
+##
+# Launches vim using tmux.
+#
+# The arguments to this function should be the arguments to tmux just before
+# the command to launch bash.
+#
+# This function assumes that $PROJECT_VIM_RC and $PROJECT_BASH_RC are set. If
+# the former exists, but the latter does not, the user will be queried whether
+# to load the vim resource file. If declined, the value of $PROJECT_VIM_RC will
+# be cleared.
+tmux_project_editor() {
+    if [ -f "$PROJECT_VIM_RC" ] && ! [ -f "$PROJECT_BASH_RC" ]; then
+        if [ "$(tmux-query \
+                --prompt \
+"This directory contains a vim resource file, but no project file.
+
+Do you still want to load the vim resource file?" \
+        yes no)" != "yes" ]; then
+            PROJECT_VIM_RC=""
+        fi
+    fi
+
+    tmux "$@" bash -lic "
+        export TMUX_PROJECT_STAGE=editor ;
+        [ -f $PROJECT_BASH_RC ] && . $PROJECT_BASH_RC ;
+        vim +'if filereadable(\"$PROJECT_VIM_RC\") \
+            | source $PROJECT_VIM_RC'"
+}
+
+
+##
+# Starts a shell using tmux.
+#
+# The arguments to this function should be the arguments to tmux just before
+# the command to launch bash.
+#
+# To pass the local environment we use --rcfile with a temporary FIFO to make
+# bash load normal startup files in addition to the current environment.
+#
+# We use a FIFO instead of <(...) since the command is executed by tmux and
+# file descriptors are not passed to the command in respawn-pane.
+tmux_project_shell() {
+    rcfile="$(mktemp -u)"
+    mkfifo "$rcfile"
+    tmux "$@" bash --rcfile "$rcfile" -i
+    cat > "$rcfile" <<___
+[ -f /etc/profile ]       && . /etc/profile
+[ -f ~/.bashrc ]          && . ~/.bashrc
+if [ "\$TMUX_PROJECT_SHOW_HIDDEN" = "yes" ]; then
+    export FZF_DEFAULT_COMMAND="\$FZF_DEFAULT_COMMAND --hidden"
+    export FZF_SEARCH_COMMAND="\$FZF_SEARCH_COMMAND --hidden"
+fi
+if [ "\$TMUX_PROJECT_SHOW_VCS" = "yes" ]; then
+    export FZF_DEFAULT_COMMAND="\$FZF_DEFAULT_COMMAND --no-ignore-vcs"
+    export FZF_SEARCH_COMMAND="\$FZF_SEARCH_COMMAND --no-ignore-vcs"
+fi
+true
+___
+    rm "$rcfile"
+}
