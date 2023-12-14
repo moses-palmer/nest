@@ -18,3 +18,7 @@
 	path = twigs/vim/files/.vim/pack/plugins/opt/vim-sneak
 	ignore = dirty
 	url = https://github.com/justinmk/vim-sneak
+[submodule "twigs/vim_ansi_esc/files/.vim/pack/plugins/opt/AnsiEsc.vim"]
+	path = twigs/vim_ansi_esc/files/.vim/pack/plugins/opt/AnsiEsc.vim
+	ignore = dirty
+	url = https://github.com/vim-scripts/AnsiEsc.vim
