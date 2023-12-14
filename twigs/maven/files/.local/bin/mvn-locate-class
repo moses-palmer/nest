@@ -1,0 +1,62 @@
+#!/bin/bash
+#
+## Attempts to determine the maven artifact coordinates to gain access to a
+## class.
+##
+## Usage: maven-locate-class PARTIAL_CLASS_NAME [GUESS]
+##
+## PARTIAL_CLASS_NAME is the end of the fully qualified class name.
+##
+## GUESS is the start of the maven coordinate. Specify this to speed up search.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+##
+# The location of the maven repository.
+#
+# We export it to allow us to reference it in a subshell.
+export MAVEN_REPOSITORY="$HOME/.m2/repository"
+
+
+##
+# Checks a JAR file for files matching a pattern.
+#
+# We export it to allow us to run it in a subshell.
+inner() {
+    pattern="$1"
+    path="$2"
+
+    matches="$(zipinfo -1 "$path" | grep -e "$pattern")"
+    if [ -n "$matches" ]; then
+        path="$(realpath --relative-to="$MAVEN_REPOSITORY" "$path")"
+        version="$(echo "$path" \
+            | sed 's:.*/\([^/]\+\)/.*:\1:g')"
+        artifact="$(echo "$path" \
+            | sed 's:.*/\([^/]\+\)/[^/]\+/.*:\1:g')"
+        group="$(echo "$path" \
+            | sed 's:\(.\+\)/[^/]\+/[^/]\+/.*:\1:g' \
+            | sed 's:/:.:g')"
+        echo "In $(tput bold)$group:$artifact:$version$(tput sgr0):"
+        echo "$matches" \ | sed \
+            -e 's:\.class\b::g' \
+            -e 's:/:.:g' \
+            -e 's/^/    /g'
+    fi
+}
+
+export -f inner
+
+
+main() {
+    pattern="$(echo "$1" \
+        | sed 's:\([^\]\)[.]:\1/:g' \
+        | sed 's:\\\.:.:g')\.class$"
+    path="$MAVEN_REPOSITORY/$(echo "$2" | sed 's/[.:]/\//g')"
+
+    find "$path" -name '*.jar' -exec bash -c "inner $pattern '{}'" \;
+}
+
+
+main "$@"
