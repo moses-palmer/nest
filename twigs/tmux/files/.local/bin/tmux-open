@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+# Change to the current directory of the pane
+cd "$(tmux display-message -p -F "#{pane_current_path}")"
+
+# Copy the current selection if any
+tmux send -X copy-selection-and-cancel \
+    && tmux save-buffer - | g
