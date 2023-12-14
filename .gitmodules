@@ -66,3 +66,7 @@
 	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/vim-lsp
 	ignore = dirty
 	url = https://github.com/prabirshrestha/vim-lsp
+[submodule "twigs/vim_vimspector/files/.vim/pack/plugins/opt/vimspector"]
+	path = twigs/vim_vimspector/files/.vim/pack/plugins/opt/vimspector
+	ignore = dirty
+	url = https://github.com/puremourning/vimspector
