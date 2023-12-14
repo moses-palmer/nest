@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+## Executes a command inside a named docker container or image.
+##
+## A terminal is allocated.
+##
+## Usage: dex CONTAINER ARG1 [ARGN...]
+##        dex --image IMAGE ARG1 [ARGN...]
+##
+## If the first argument is --image, a container for the image IMAGE is run for
+## the duration of this script.
+
+set -e
+AUTOHELP_PARSE=no
+. ~/.local/lib/bash/autohelp
+
+
+if [ "$#" -lt 2 ]; then
+    autohelp
+    exit 1
+fi
+
+
+if [ "$1" = "--image" ]; then
+    shift
+    image="$1"
+    shift
+    bin="$1"
+    shift
+    docker run --tty --interactive --rm --entrypoint "$bin" "$image" -- "$@"
+
+else
+    # Convert the container name to a container ID
+    container_id="$(docker ps --quiet --filter "name=$1")"
+    if [ -z "$container_id" ]; then
+        echo "Unknown container: $1"
+        exit 1
+    else
+        shift
+        docker exec --tty --interactive "$container_id" "$@"
+    fi
+fi
