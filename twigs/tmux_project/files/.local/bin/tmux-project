@@ -1,0 +1,130 @@
+#!/bin/bash
+
+. ~/.config/tmux-project
+. ~/.local/lib/bash/tmux-project
+
+
+if [ -d "$1" ]; then
+    ROOT="$1"
+else
+    ROOT="$(pwd)"
+fi
+if [ -n "$2" ]; then
+    WINDOW="$2"
+else
+    WINDOW="$(tmux display-message -p "#{window_id}")"
+fi
+if [ -n "$3" ]; then
+    PANE="$3"
+else
+    PANE="$(tmux display-message -p "#{pane_id}")"
+fi
+
+
+##
+# A project local bash resource file.
+PROJECT_BASH_RC="$ROOT/$TMUX_PROJECT_FILE"
+[ -f "$PROJECT_BASH_RC" ] \
+    && TMUX_PROJECT_STAGE=main . "$PROJECT_BASH_RC" \
+    && tmux set-window-option \
+        "$TMUX_PROJECT_FILE_VAR" "$PROJECT_BASH_RC"
+
+##
+# A project local vim resource file.
+PROJECT_VIM_RC="$ROOT/.vimrc"
+
+##
+# The name of the current project.
+PROJECT="${PROJECT:-$(basename "$ROOT")}"
+
+##
+# The icon displayed for the window.
+ICON="${ICON:-📂}"
+
+##
+# The width of the editor pane.
+WIDTH="${WIDTH:-60%}"
+
+##
+# A project local bash history file.
+PROJECT_BASH_HISTFILE="$HOME/.cache/bash/history/$PROJECT"
+
+set -eu
+
+
+##
+# Launches vim in a new pane and outputs its ID to STDOUT.
+launch_editor() {
+    tmux_project_editor split-window \
+        -b \
+        -c "$ROOT" \
+        -e HISTFILE="$PROJECT_BASH_HISTFILE"  \
+        -f \
+        -h \
+        -t "$PANE" \
+        -P -F "#{pane_id}"
+}
+
+
+##
+# Replaces the shell in the original pane and outputs its ID to STDOUT.
+replace_shell() {
+    tmux_project_shell respawn-pane \
+        -c "$ROOT" \
+        -e HISTFILE="$PROJECT_BASH_HISTFILE" \
+        -k \
+        -t "$PANE"
+    echo "$PANE"
+}
+
+
+##
+# Launches a new shell and outputs its ID to STDOUT.
+launch_shell() {
+    tmux_project_shell split-window \
+        -c "$ROOT" \
+        -e HISTFILE="$PROJECT_BASH_HISTFILE"  \
+        -f \
+        -h \
+        -t "$PANE" \
+        -P -F "#{pane_id}"
+}
+
+
+# Make sure we have a local history file
+if [ ! -f "$PROJECT_BASH_HISTFILE" ]; then
+    [ -f ~/.bash_history ] && cp ~/.bash_history "$PROJECT_BASH_HISTFILE"
+fi
+
+# If the window is not currently an editor window, make it one
+if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
+    # Launch the editor pane and mark this window as an editor window
+    tmux set-window-option \
+        -t "$WINDOW" \
+        "$TMUX_PROJECT_EDITOR_VAR" \
+        "$(launch_editor)"
+
+    # Replace the shell in the current pane
+    if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_SHELL_VAR"; then
+        tmux set-window-option \
+            -t "$WINDOW" \
+            "$TMUX_PROJECT_SHELL_VAR" \
+            "$(replace_shell)"
+    fi
+fi
+
+# If the window does not currently have a shell, launch one
+if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_SHELL_VAR"; then
+    tmux set-window-option \
+        -t "$WINDOW" \
+        "$TMUX_PROJECT_SHELL_VAR" \
+        "$(launch_shell)"
+fi
+
+
+# Rename window to make it easier to find and apply the fixed layout
+tmux rename-window -t "$WINDOW" "$ICON $PROJECT"
+tmux set-window-option \
+    main-pane-width "$WIDTH"
+tmux select-layout \
+    main-vertical
