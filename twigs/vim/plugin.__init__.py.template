@@ -1,0 +1,7 @@
+"""{description}
+"""
+
+from .. import vim
+
+
+main = vim.plugin()

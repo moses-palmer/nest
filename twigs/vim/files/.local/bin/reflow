@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+
+import enum
+import shutil
+import sys
+
+from itertools import pairwise, takewhile
+from typing import Generator, List, Optional, Sequence, Tuple
+
+
+class Indentation(enum.Enum):
+    AUTO = -1
+    KEEP = 0
+    DISCARD = 1
+    FIRST = 2
+    BULLET = 3
+
+def main(
+    columns: int,
+    indentation: Indentation,
+):
+    for i, block in enumerate(blocks(sys.stdin)):
+        if i != 0:
+            # Make sure to separate blocks
+            print()
+
+        # Ensure we have a valid indentation kind
+        if indentation == Indentation.AUTO:
+            indent_kind = detect_indentation_kind(block)
+        else:
+            indent_kind = indentation
+
+        # Detect indentation, and start with the first line indentation
+        indent_first, indent_rest = detect_indentation(block, indent_kind)
+        indent = indent_first
+
+        current = ''
+        words = 0
+        for line in strip_indentation(
+                block, indent_first, indent_rest, indent_kind):
+            if not line.strip():
+                print(current)
+                print(indent)
+                current = indent
+                continue
+            for word in line.split():
+                if words == 0:
+                    # We are at the first word of the block
+                    current = indent
+                    indent = indent_rest
+
+                if len(current) + int(words > 0) + len(word) >= columns:
+                    # The line is full
+                    if words == 0:
+                        # ...from only one word; print it
+                        print(current + word)
+                        current = ''
+                        words = 0
+                    else:
+                        # ...but we already have a line; print it and continue
+                        print(current)
+                        current = indent + word
+                        words = 1
+
+                else:
+                    # There is still room for a new word; add it
+                    current += ' ' * int(words > 0) + word
+                    words += 1
+
+        if current:
+            # Print the remaining text
+            print(current)
+            current = ''
+
+
+def blocks(source: Sequence[str]) -> Generator[List[str], None, None]:
+    """Yields text blocks from a source of lines.
+
+    A block is a section of text delimited by empty lines.
+
+    :param source: A source of lines.
+    """
+    current = []
+    for line in source:
+        if not line.strip():
+            if current:
+                yield current
+            current = []
+        else:
+            current.append(line.rstrip())
+    if current:
+        yield current
+
+
+def detect_indentation_kind(block: List[str]) -> Indentation:
+    """Attempt to detect the indentation kind for a block.
+
+    :return: an indentation kind different from :attr:`Indentation.AUTO`
+    """
+    def initial_spaces(s):
+        for i, c in enumerate(s):
+            if not c.isspace():
+                return i
+        else:
+            return len(s)
+
+    def before_bullet(s):
+        spaces = initial_spaces(s)
+        if spaces < len(s) and s[spaces] == '*':
+            return spaces
+
+    def shared_spaces(ss):
+        spaces = {initial_spaces(s) for s in ss}
+        if len(spaces) == 1:
+            return spaces.pop()
+
+    def increasing(a, b):
+        if a is None or b is None:
+            return False
+        else:
+            return b > a
+
+    # If we have at most one line, just keep the indentation
+    if len(block) < 2:
+        return Indentation.KEEP
+
+    elif increasing(before_bullet(block[0]), shared_spaces(block[1:])):
+        # If the first line has a bullet as its first non-space character, and
+        # all other lines share indentation, assume BULLET
+        return Indentation.BULLET
+
+    elif shared_spaces(block) is None:
+        # If not all lines share indentation, assume DISCARD
+        return Indentation.DISCARD
+
+    else:
+        # Fall back on KEEP
+        return Indentation.KEEP
+
+
+def detect_indentation(
+    block: List[str],
+    indentation: Indentation,
+) -> Tuple[str, str]:
+    """Detects the indentation to use for a block.
+
+    :param block: The block for which to detect indentation.
+    :param indentation: The indentation kind to use.
+
+    :return: the tuple ``(first_line, remaining_lines)``
+    """
+    if not block:
+        return ('', '')
+
+    if indentation == Indentation.KEEP:
+        if len(block) == 1:
+            indent = ''.join(takewhile(str.isspace, block[0]))
+        else:
+            indent = ''.join(
+                v[1]
+                for v in takewhile(
+                    lambda v: True
+                        and all(
+                            len(line) > v[0]
+                            for line in block)
+                        and all(
+                            l1[v[0]] == l2[v[0]]
+                            for l1, l2 in pairwise(block)),
+                    enumerate(block[0])))
+        return (indent, indent)
+
+    elif indentation == Indentation.DISCARD:
+        return ('', '')
+
+    elif indentation == Indentation.FIRST:
+        indent_first = ''.join(takewhile(str.isspace, block[0]))
+        return (indent_first, indent_first)
+
+    elif indentation == Indentation.BULLET:
+        space_before = ''.join(takewhile(str.isspace, block[0]))
+        if len(space_before) < len(block[0]) \
+                and block[0][len(space_before)] == '*':
+            space_after = ''.join(
+                takewhile(str.isspace, block[0][len(space_before) + 1:]))
+            indent_first = space_before + '*' + space_after
+            block[0] = block[0][len(space_before) + 1:]
+        else:
+            indent_first = space_before
+        indent_rest = detect_indentation(block[1:], Indentation.KEEP)
+        return (indent_first, indent_rest[0])
+
+
+def strip_indentation(
+    block: List[str],
+    first: str,
+    rest: str,
+    indentation: Indentation,
+) -> Generator[str, None, None]:
+    """Strips indentation from all lines in a block.
+
+    :param block: The block for which to strip indentation.
+    :param first: The indentation of the first line.
+    :param rest: The indentation of the following lines.
+    :param indentation: The indentation kind to use.
+    """
+    if indentation == Indentation.KEEP:
+        for line in block:
+            yield line[len(first):]
+
+    elif indentation == Indentation.BULLET:
+        for i, line in enumerate(block):
+            if i == 0:
+                yield line[len(first):]
+            else:
+                yield line[len(rest):]
+
+    else:
+        yield from block
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Reflows text')
+
+    parser.add_argument(
+        '--columns',
+        help='The number of columns to use.',
+        type=int,
+        default=shutil.get_terminal_size().columns)
+
+    parser.add_argument(
+        '--indentation',
+        help='Whether to keep the indentation. Value values are: keep, to '
+        'find the minimal shared indentation of each block; discard, to '
+        'remove any current indentation; first, to use the indentation of the '
+        'first line of each block; bullet, to use a separate indentation for '
+        'the first line of each block with support for markdown bullet lists, '
+        'and then apply "keep"; auto, to automatically detect one of the '
+        'previous kinds.',
+        type=lambda s: Indentation[s.upper()],
+        default=Indentation.KEEP)
+
+    main(**vars(parser.parse_args()))
