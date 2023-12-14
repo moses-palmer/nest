@@ -1,0 +1,7 @@
+line-length=80
+
+[lint]
+ignore = ["E722", "F403"]
+
+[format]
+quote-style = "single"
