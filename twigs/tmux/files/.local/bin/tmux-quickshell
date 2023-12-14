@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+## Quickly opens a terminal in a popup.
+##
+## Usage: tmux-quickshell [PATH]
+##
+## If PATH is provided, the starting directory will be set to either PATH, if
+## it is a directory, or its parent directory if it is a file.
+
+. ~/.local/lib/bash/autohelp
+
+
+if [ -d "$1" ]; then
+    DIR="$1"
+elif [ -f "$1" ]; then
+    DIR="$(dirname "$1")"
+elif [ -z "$1" ]; then
+    DIR="$PWD"
+else
+    autohelp
+    exit 1
+fi
+
+tmux display-popup \
+    -E \
+    -d "$DIR" \
+    "$SHELL"
