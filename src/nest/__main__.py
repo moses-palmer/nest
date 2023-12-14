@@ -33,6 +33,7 @@ def initialize():
         configuration = Configuration(
             directories.ROOT / '.gitmodules',
             directories.ROOT / 'configuration.conf',
+            local.CONFIGURATION_FILE,
             distribution=distribution,
             python_version=platforms.Version(tuple(sys.version_info[:3])),
             version=version,
@@ -214,6 +215,7 @@ def update(
             cwd=Path(__file__).parent.parent.parent,
         )
         try:
+            local_twig = next(t for t in TWIGS if t.name == 'local')
             subprocess.check_call(
                 [
                     'git',
@@ -229,6 +231,7 @@ def update(
                         for (twig, updates) in sorted(
                             updates_for_twigs.items(), key=lambda a: a[0]
                         )
+                        if twig.source != local_twig.source
                     ),
                 ],
                 stdout=subprocess.DEVNULL,
