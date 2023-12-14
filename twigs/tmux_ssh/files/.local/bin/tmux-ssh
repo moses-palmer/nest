@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+## Nest a tmux session over SSH.
+##
+## This application will nest an SSH session running tmux in the current tmux
+## session. The remote host name is the name of the running script, so create a
+## link to this script with a name corresponding to one of the configured hosts
+## in your SSH configuration.
+
+. ~/.local/lib/bash/autohelp
+
+set -e
+
+##
+# The name of the remote host is specified as the name by which we are invoked.
+HOST="$(basename "$0")"
+
+##
+# The window name before updating.
+PREVIOUS_WINDOW_NAME="$(tmux display-message -p '#W')"
+
+
+##
+# Restores the previous tmux configuration.
+restore() {
+    tmux rename-window "$PREVIOUS_WINDOW_NAME"
+    tmux-nested off
+}
+trap restore EXIT
+
+
+# Prepare for inner session
+tmux-nested on
+
+
+# Connect to host
+tmux rename-window "🖥 $HOST"
+ssh -t "$HOST" tmux new-session -As main "$@"
