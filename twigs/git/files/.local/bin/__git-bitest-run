@@ -1,0 +1,15 @@
+#!/bin/sh
+
+##
+# The current commit
+HEAD="$(git rev-parse HEAD)"
+
+
+git apply "$GIT_BITEST_PATCH_FILE" || exit 125
+
+"$@"
+ret="$?"
+
+git apply --reverse "$GIT_BITEST_PATCH_FILE" || exit 125
+
+exit "$ret"
