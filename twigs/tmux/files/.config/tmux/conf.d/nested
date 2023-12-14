@@ -1,0 +1,3 @@
+# Enable simple nested sessions
+bind -T root F12 run-shell -b 'tmux-nested on'
+bind -T off F12 run-shell -b 'tmux-nested off'

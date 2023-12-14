@@ -1,0 +1,49 @@
+# Let split panes keep the current directory
+bind-key '"' split-window -c "#{pane_current_path}"
+bind-key % split-window -h -c "#{pane_current_path}"
+
+# Ctrl+f for full-screen
+bind-key -n C-f resize-pane -Z
+
+# Bindings to toggle pane
+bind-key -n M-h run-shell "~/.local/bin/tmux-toggle-pane -hb"
+bind-key -n M-j run-shell "~/.local/bin/tmux-toggle-pane -v"
+bind-key -n M-k run-shell "~/.local/bin/tmux-toggle-pane -vb"
+bind-key -n M-l run-shell "~/.local/bin/tmux-toggle-pane -h"
+
+# Easily navigate windows
+bind-key -n S-M-Left previous-window
+bind-key -n S-M-Right next-window
+bind-key w choose-tree -Zw -F \
+    "#{?window_active,#[fg=white#,bold]▶ ,#[fg=gray]  }#W"
+
+# Yell to all panes
+bind-key -n C-y setw synchronize-panes
+
+# Enable colours
+set-option -g default-terminal tmux-256color
+
+# Use vi bindings
+set-option -g mode-keys vi
+
+# Increase the history limit
+set-option -g history-limit 10000
+
+# Prevent pause when switching modes in vim
+set-option -sg escape-time 0
+
+# Do not terminate server when no session are active
+set-option -g exit-empty off
+
+# Update status line every 5 seconds
+set-option -g status-interval 5
+
+# Let the status format determine separators
+set-window-option -g window-status-separator ''
+set-option -wg window-status-format ' #I:#W⎹'
+set-option -wg window-status-current-format ' #I:#W⎹'
+set-option -g status-left ''
+set-option -g status-right '⎸🖥 #H %H:%M'
+
+# Apply the non-nested style
+run-shell  'tmux-nested off'
