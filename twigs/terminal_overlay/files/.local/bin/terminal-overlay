@@ -1,0 +1,406 @@
+#!/usr/bin/env python3
+
+import configparser
+import os
+import sys
+import time
+
+import gi
+gi.require_version('Gdk', '3.0')
+gi.require_version('Gio', '2.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('Vte', '2.91')
+
+from gi.repository import GLib, Gdk, Gio, Gtk, Vte
+
+
+#: The title of the main window.
+TITLE = 'Terminal Overlay'
+
+#: The default fullscreen mode.
+FULLSCREEN_DEFAULT = True
+
+#: The default remote mode.
+REMOTE_DEFAULT = True
+
+#: The default monitor.
+MONITOR_DEFAULT = -1
+
+#: The default foreground colour.
+FG_COLOR_DEFAULT = 'rgba(100%, 100%, 100%, 1.0)'
+
+#: The default background colour.
+BG_COLOR_DEFAULT = 'rgba(20%, 20%, 20%, 0.9)'
+
+#: The default font family for the terminal.
+FONT_FAMILY_DEFAULT = ''
+
+#: The default font scale.
+FONT_SCALE_DEFAULT = '1.0'
+
+#: The font scale modification when decreasing scaling.
+FONT_SCALE_DEC = 0.9
+
+#: The font scale modification when increasing scaling.
+FONT_SCALE_INC = 1.0 / FONT_SCALE_DEC
+
+#: The name of the DBus service.
+SERVICE_NAME = 'com.newrainsoftware.TerminalOverlay'
+
+#: The path of the DBus service.
+SERVICE_PATH = '/' + SERVICE_NAME.replace('.', '/')
+
+#: The DBus service description.
+SERVICE_XML = '''
+<node>
+    <interface name="{}">
+        <property name="Display" type="i" access="read" />
+        <property name="Scale" type="d" access="readwrite" />
+        <method name="CycleDisplay" />
+        <method name="Toggle" />
+        <method name="ReloadConfiguration" />
+        <method name="Exit" />
+    </interface>
+</node>
+'''.format(SERVICE_NAME)
+
+#: The minimum number of secods that must pass between every invocation of
+#: main application window visibility toggle.
+TOGGLE_THROTTLE = 0.2
+
+#: The prefix used for user actions.
+USER_ACTION_PREFIX = 'user'
+
+
+def main(command: [str]):
+    try:
+        Application(command).run([])
+    except ValueError as e:
+        sys.stderr.write('{}\n'.format(str(e)))
+        sys.exit(1)
+
+
+class Application(Gtk.Application):
+    def __init__(self, command: [str]):
+        super(Application, self).__init__(
+            application_id=SERVICE_NAME,
+            flags=Gio.ApplicationFlags.FLAGS_NONE)
+
+        self._screen = Gdk.Screen.get_default()
+        self._display = self._screen.get_display()
+        self._command = command
+        self._load_configuration()
+
+    def do_activate(self, *_args):
+        Gtk.Application.do_activate(self)
+
+        window = self._window()
+        self.add_window(window)
+        terminal = self._terminal()
+        self._apply_configuration(window, terminal)
+        window.add(terminal)
+        self._register_actions(window, terminal)
+
+        def hide():
+            window.hide()
+
+        def show():
+            self._resize_window(window)
+            window.show_all()
+
+        def reload_configuration():
+            self._load_configuration()
+            self._apply_configuration(window, terminal)
+
+        def toggle():
+            timestamp = getattr(toggle, 'timestamp', 0)
+            if time.time() - timestamp < TOGGLE_THROTTLE:
+                return
+            toggle.timestamp = time.time()
+
+            if window.get_visible():
+                hide()
+            else:
+                show()
+
+        def cycle_display():
+            self._monitor_num = self._locate_monitor(
+                (self._monitor_num + 1) % self._display.get_n_monitors())
+            self._resize_window(window)
+
+        def get_display():
+            return self._monitor_num
+
+        def get_scale():
+            return terminal.get_font_scale()
+
+        def set_scale(value: float):
+            terminal.set_font_scale(value.get_double())
+
+        def exit():
+            window.destroy()
+
+        if self._remote:
+            self._start_server(
+                CycleDisplay=cycle_display,
+                Toggle=toggle,
+                ReloadConfiguration=reload_configuration,
+                Exit=exit,
+                get_Display=(get_display, 'i'),
+                get_Scale=(get_scale, 'd'),
+                set_Scale=(set_scale, 'd'))
+
+        else:
+            show()
+
+    def _load_configuration(self):
+        """Loads the configuration from the default configuration file.
+
+        This method will update the cached configuration values, but the
+        configuration will not be applied.
+        """
+        configuration = configparser.ConfigParser()
+        configuration.read(os.path.expanduser(
+            '~/.config/terminal-overlay.conf'))
+        configuration.read(os.path.expanduser(
+            '~/.config/terminal-overlay.overrides.conf'))
+
+        def string(sec, name, default):
+            return configuration.get(sec, name, fallback=default)
+
+        def boolean(sec, name, default):
+            value = configuration.get(sec, name, fallback='')
+            if value:
+                return value.lower() in ('true', 'yes')
+            else:
+                return default
+
+        def number(sec, name, default):
+            value = configuration.get(sec, name, fallback=default)
+            try:
+                return float(value)
+            except ValueError:
+                raise ValueError(
+                    'invalid number value {}.{}: "{}"',
+                    sec, name, value)
+
+        def color(name, default):
+            value = configuration.get('colors', name, fallback=default)
+            result = Gdk.RGBA()
+            if value is not None and not result.parse(value):
+                raise ValueError(
+                    'invalid colour value colors.{}: "{}"'.format(
+                        name, value))
+            else:
+                return result
+
+        self._fullscreen = boolean('display', 'fullscreen', FULLSCREEN_DEFAULT)
+        self._monitor_num = self._locate_monitor(
+            int(number('display', 'monitor', -1)))
+
+        self._remote = boolean('remote', 'enabled', True)
+
+        self._font_family = string('font', 'family', FONT_FAMILY_DEFAULT)
+        self._font_scale = number('font', 'scale', FONT_SCALE_DEFAULT)
+        self._initial_font_scale = self._font_scale
+
+        self._fg_color = color('foreground-color', FG_COLOR_DEFAULT)
+        self._bg_color = color('background-color', BG_COLOR_DEFAULT)
+        self._palette = [
+            color(str(i), None)
+            for i in range(16)]
+
+        try:
+            self._macros = {
+                k: v.encode('ascii').decode('unicode_escape').encode('ascii')
+                for (k, v) in configuration.items('macros')}
+        except configparser.NoSectionError:
+            self._macros = {}
+
+    def _apply_configuration(self, window: Gtk.Window, terminal: Vte.Terminal):
+        """Applies the configuration.
+        """
+        terminal.set_colors(self._fg_color, self._bg_color, self._palette)
+        terminal.set_font_scale(self._font_scale)
+        if self._font_family:
+            font = terminal.get_font()
+            font.set_family(self._font_family)
+            terminal.set_font(font)
+
+        def macro_handler(macro):
+            return lambda *_: os.write(terminal.get_pty().get_fd(), macro)
+
+        for action_description in self.list_action_descriptions():
+            if action_description.startswith(USER_ACTION_PREFIX):
+                self.remove_action(action_description)
+
+        for (index, (accel, macro)) in enumerate(self._macros.items()):
+            action = Gio.SimpleAction(name=USER_ACTION_PREFIX + str(index))
+            name = action.get_name()
+            macro = self._macros[accel]
+            action.connect(
+                'activate',
+                macro_handler(macro))
+            window.add_action(action)
+            self.set_accels_for_action('win.' + name, [accel])
+
+    def _terminal(self) -> Vte.Terminal:
+        """Creates the terminal widget and ensures that it runs the command.
+        """
+        result = Vte.Terminal()
+        result.set_audible_bell(False)
+        result.set_can_focus(True)
+        result.set_scroll_on_keystroke(True)
+        result.set_scroll_on_output(True)
+
+        if hasattr(result, 'spawn_async'):
+            def callback(terminal, pid, error, *_):
+                if error is not None:
+                    print(error)
+                    sys.exit(1)
+
+            def spawn():
+                result.spawn_async(Vte.PtyFlags.DEFAULT, None, self._command,
+                    None, GLib.SpawnFlags.SEARCH_PATH, None, -1, -1, None,
+                    callback)
+        else:
+            def spawn():
+                result.spawn_sync(Vte.PtyFlags.DEFAULT, None, self._command,
+                    None, GLib.SpawnFlags.SEARCH_PATH, None, None, None)
+
+        def child_exited(*_args):
+            spawn()
+            return True
+        result.connect('child-exited', child_exited)
+
+        spawn()
+
+        return result
+
+    def _window(self) -> Gtk.ApplicationWindow:
+        """Creates the main window.
+        """
+        result = Gtk.ApplicationWindow(type=Gtk.WindowType.TOPLEVEL)
+
+        result.set_title(TITLE)
+        result.set_icon_name('terminal')
+
+        result.set_accept_focus(True)
+        result.set_decorated(False)
+        result.set_deletable(False)
+        result.set_keep_above(True)
+        result.set_skip_pager_hint(True)
+        result.set_skip_taskbar_hint(True)
+        result.set_visual(result.get_screen().get_rgba_visual())
+        result.set_position(Gtk.WindowPosition.CENTER)
+
+        result.set_type_hint(Gdk.WindowTypeHint.DOCK)
+        result.stick()
+
+        def delete_event(*_args):
+            result.hide()
+            return True
+        result.connect('delete-event', delete_event)
+
+        def destroy(*_args):
+            self.quit()
+            return True
+        result.connect('destroy', destroy)
+
+        return result
+
+    def _locate_monitor(self, monitor_num: int) -> int:
+        """Returns the index of the monitor to use.
+
+        If ``monitor_num`` has a value in the allowed range, this is returned,
+        otherwise the primary monitor is located. If that cannot be found,
+        ``0`` is returned.
+
+        :param monitor_num: The preferred monitor.
+        """
+        count = self._display.get_n_monitors()
+        if monitor_num >= 0 and monitor_num < count:
+            return monitor_num
+        else:
+            for n in range(count):
+                if self._display.get_monitor(n).is_primary():
+                    return n
+            return 0
+
+    def _resize_window(self, window: Gtk.Window):
+        """Resizes a window to the geometry of the current monitor.
+
+        :param window: The window to fullscreen.
+        """
+        if self._fullscreen:
+            window.fullscreen_on_monitor(self._screen, self._monitor_num)
+        else:
+            monitor = self._display.get_monitor(self._monitor_num)
+            if monitor:
+                geometry = monitor.get_geometry()
+                window.move(geometry.x, geometry.y)
+                window.resize(geometry.width, geometry.height)
+
+    def _register_actions(self, window: Gtk.Window, terminal: Vte.Terminal):
+        """Creates the application actions.
+        """
+        def action(name, accel, activate, *args):
+            action = Gio.SimpleAction(name=name)
+            name = action.get_name()
+            action.connect('activate', lambda *_: activate(*(
+                arg() if callable(arg) else arg
+                for arg in args)))
+            window.add_action(action)
+            self.set_accels_for_action('win.' + name, [accel])
+
+        action(
+            'copy',
+            '<primary><shift>c',
+            terminal.copy_clipboard_format,
+            Vte.Format.TEXT)
+        action(
+            'paste',
+            '<primary><shift>v',
+            terminal.paste_clipboard)
+        action(
+            'larger',
+            '<primary><shift>Page_Up',
+            terminal.set_font_scale,
+            lambda: terminal.get_font_scale() * FONT_SCALE_INC)
+        action(
+            'smaller',
+            '<primary><shift>Page_Down',
+            terminal.set_font_scale,
+            lambda: terminal.get_font_scale() * FONT_SCALE_DEC)
+        action(
+            'reset',
+            '<primary><shift>equal',
+            terminal.set_font_scale,
+            self._initial_font_scale)
+
+    def _start_server(self, **kwargs):
+        """Starts the DBus server.
+        """
+        gi.require_version('DBus', '1.0')
+
+        Gio.bus_own_name(
+            Gio.BusType.SESSION,
+            SERVICE_NAME,
+            Gio.BusNameOwnerFlags.NONE,
+            lambda conn, *_: Gio.DBusConnection.register_object(
+                conn,
+                SERVICE_PATH,
+                Gio.DBusNodeInfo.new_for_xml(SERVICE_XML).interfaces[0],
+                lambda _c, _s, _p, _i, meth, *_: Gdk.threads_add_idle(
+                    GLib.PRIORITY_DEFAULT_IDLE,
+                    kwargs[meth]),
+                lambda _c, _s, _p, _i, meth, *_: GLib.Variant(
+                    kwargs['get_' + meth][1],
+                    kwargs['get_' + meth][0]()),
+                lambda _c, _s, _p, _i, meth, value, *_:
+                    kwargs['set_' + meth][0](value)))
+
+
+if __name__ == '__main__':
+    Gtk.init([])
+    main(sys.argv[1:])
