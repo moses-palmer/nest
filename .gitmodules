@@ -54,3 +54,15 @@
 	path = twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree-git-plugin
 	ignore = dirty
 	url = https://github.com/Xuyuanp/nerdtree-git-plugin
+[submodule "twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete.vim"]
+	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete.vim
+	ignore = dirty
+	url = https://github.com/prabirshrestha/asyncomplete.vim
+[submodule "twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete-lsp.vim"]
+	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete-lsp.vim
+	ignore = dirty
+	url = https://github.com/prabirshrestha/asyncomplete-lsp.vim
+[submodule "twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/vim-lsp"]
+	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/vim-lsp
+	ignore = dirty
+	url = https://github.com/prabirshrestha/vim-lsp
