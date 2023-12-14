@@ -1,0 +1,1 @@
+../pack/plugins/opt/ron.vim/ftdetect/ron.vim
