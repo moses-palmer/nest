@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+
+import argparse
+import contextlib
+import os
+import subprocess
+import sys
+import tempfile
+import termios
+import tty
+
+from typing import Tuple
+
+
+#: The environment variable name of the output file.
+OUTPUT_FILE_ENV = 'QUERY_OUTPUT_FILE'
+
+
+def main(prompt, width, inner, alternatives):
+    alternatives = alternatives_map(*alternatives)
+    if inner:
+        main_inner(prompt, width, alternatives)
+    else:
+        main_outer(prompt, width, alternatives)
+
+
+def main_inner(prompt, width, alternatives):
+    _, text, separator, prompt_line = prompt_text(prompt, alternatives, width)
+    sys.stdout.write(text)
+    sys.stdout.write('\n' + separator)
+    sys.stdout.write('\033[1m{}\033[0m'.format(prompt_line))
+    sys.stdout.write('\033[?25l')
+    sys.stdout.flush()
+    with raw_terminal() as stdin:
+        while True:
+            r = stdin.read(1)
+            if r in alternatives:
+                with open(
+                        os.environ[OUTPUT_FILE_ENV],
+                        'w',
+                        encoding='utf-8') as f:
+                    f.write(alternatives[r])
+                    f.flush()
+                break
+            elif r == '\x1b':
+                break
+
+
+def main_outer(prompt, width, alternatives):
+    width, text, _, _ = prompt_text(prompt, alternatives, width)
+    lines = text.splitlines()
+    height = len(lines) + 3
+    (fd, target) = tempfile.mkstemp()
+    try:
+        inner = [
+            sys.executable, sys.argv[0],
+            '--inner',
+            '--prompt', prompt,
+            '--width', str(width)] \
+            + list(alternatives.values())
+        env = [
+            'env', '{}={}'.format(OUTPUT_FILE_ENV, target)] + inner
+        tmux = [
+            'tmux', 'display-popup',
+            '-E',
+            '-w', str(width + 2),
+            '-h', str(height + 2)] + env
+        subprocess.check_call(tmux)
+        with os.fdopen(fd, encoding='utf-8') as f:
+            print(f.read())
+    finally:
+        os.unlink(target)
+
+
+@contextlib.contextmanager
+def raw_terminal():
+    """Sets the TTY to raw mode and yields a file object.
+    """
+    old_mode = termios.tcgetattr(0)
+    tty.setraw(0)
+    try:
+        yield sys.stdin
+    finally:
+        termios.tcsetattr(0, termios.TCSAFLUSH, old_mode)
+
+
+def reshape(s: str, width: int) -> str:
+    """Adds newlines to the lines of s to make sure no line is longer than
+    ``width``.
+
+    :param s: The string to reshape.
+    :param width: The maximum width.
+
+    :return: a new string
+    """
+    result = []
+
+    for paragraph in s.split('\n\n'):
+        current = ''
+        for word in paragraph.split():
+            if len(current) + len(word) >= width:
+                result.append(current)
+                current = word[:width]
+                word = word[width:]
+                while word:
+                    if len(current) >= width:
+                        result.append(current)
+                        current = word[:width]
+                    word = word[len(current):]
+            else:
+                current += ' ' + word if current else word
+        if current:
+            result.append(current)
+        result.append('\n')
+
+    return '\n'.join(line for line in result[:-1] if line)
+
+
+def alternatives_map(*alternatives) -> {str: str}:
+    """Extractor for the alternatives argument.
+    """
+    result = {
+        a[0]: a
+        for a in alternatives}
+    if len(result) == len(alternatives):
+        return result
+    else:
+        raise ValueError('conflicting alternatives')
+
+
+def prompt_text(
+    prompt: str,
+    alternatives: {str: str},
+    width: int,
+) -> Tuple[int, str, str, str]:
+    """Generates information about the prompt text.
+
+    :param prompt: The prompt.
+    :param anternatives: The alternatives map.
+
+    :return: the tuple ``(width, prompt_text, separator, alternatives)``, where
+    ``width`` is the new width, which may be altered by a long list of
+    alternatives
+    """
+    alternatives_text = '[{}]'.format(' / '.join(
+        '\033[4m{}\033[24m{}'.format(v[0], v[1:])
+        for v in alternatives.values()))
+    alternatives_length = 2 + sum(len(a) for a in alternatives) \
+        + 2 * (len(alternatives))
+    width = max(width, alternatives_length)
+    prompt_text = reshape(prompt, width) + '\n'
+    separator = '╾' +  '─' * (width - 2) + '╼'
+    return (width, prompt_text, separator, alternatives_text)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description=''
+        'Queries the user for one of several options using a tmux popup '
+        'window. The first letter of each option is used to select an option '
+        'by pressing the corresponding key on the keyboard. The escape key '
+        'cancels the popup window without outputting a selection.')
+
+    parser.add_argument(
+        '--prompt',
+        required=True,
+        help='The prompt.')
+
+    parser.add_argument(
+        '--width',
+        help='The width of the prompt text.',
+        type=int,
+        default=32)
+
+    parser.add_argument(
+        '--inner',
+        help=argparse.SUPPRESS,
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
+        'alternatives',
+        help='The possible alternatives. The first character of each '
+        'alternative must be unique.',
+        nargs='+')
+
+    try:
+        main(**vars(parser.parse_args()))
+    except ValueError as e:
+        sys.stderr.write('Error: {}'.format(e))
+        sys.exit(1)

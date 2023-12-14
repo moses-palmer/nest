@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -eu
+
+##
+# The global option holding the name of the hidden session.
+SESSION_VAR="@__hidden_session"
+
+##
+# The window option holding the name of the hidden pane.
+PANE_VAR="@__hidden_pane"
+
+##
+# The current pane.
+PANE="$(tmux display-message -p "#{pane_id}")"
+
+##
+# The name of the current window.
+WINDOW_NAME="$(tmux display-message -p "#{window_name}")"
+
+
+##
+# Checks whether a tmux object exists
+#
+# $1: The object ID.
+exists() {
+    [ -n "$1" ] && tmux has-session -t "$1" 2>/dev/null
+}
+
+
+HIDDEN_SESSION="$(tmux show-options -gqv -s "$SESSION_VAR")"
+if ! exists "$HIDDEN_SESSION"; then
+    HIDDEN_SESSION="$(tmux new-session -dPF "#{session_id}" -s "Hidden panes")"
+    tmux set-option -g -s "$SESSION_VAR" "$HIDDEN_SESSION"
+fi
+
+
+HIDDEN_PANE="$(tmux show-options -gqv -w "$PANE_VAR")"
+if ! exists "$HIDDEN_PANE"; then
+    HIDDEN_PANE="$(tmux break-pane \
+        -s "$PANE" \
+        -n "$WINDOW_NAME" \
+        -dPF "#{window_id}.#{pane_id}")"
+    tmux move-window -d -s "$HIDDEN_PANE" -t "$HIDDEN_SESSION" >>~/.tmux
+    tmux set-option -g -w "$PANE_VAR" "$HIDDEN_PANE"
+else
+    tmux join-pane $@ -d -s "$HIDDEN_SESSION:$HIDDEN_PANE"
+    tmux set-option -gu -w "$PANE_VAR"
+fi
