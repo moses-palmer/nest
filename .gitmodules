@@ -22,3 +22,11 @@
 	path = twigs/vim_ansi_esc/files/.vim/pack/plugins/opt/AnsiEsc.vim
 	ignore = dirty
 	url = https://github.com/vim-scripts/AnsiEsc.vim
+[submodule "twigs/vim_fileformats/files/.vim/pack/plugins/opt/ron.vim"]
+	path = twigs/vim_fileformats/files/.vim/pack/plugins/opt/ron.vim
+	ignore = dirty
+	url = https://github.com/ron-rs/ron.vim
+[submodule "twigs/vim_fileformats/files/.vim/pack/plugins/opt/rust.vim"]
+	path = twigs/vim_fileformats/files/.vim/pack/plugins/opt/rust.vim
+	ignore = dirty
+	url = https://github.com/rust-lang/rust.vim
