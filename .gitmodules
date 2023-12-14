@@ -30,3 +30,11 @@
 	path = twigs/vim_fileformats/files/.vim/pack/plugins/opt/rust.vim
 	ignore = dirty
 	url = https://github.com/rust-lang/rust.vim
+[submodule "twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf"]
+	path = twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf
+	ignore = dirty
+	url = https://github.com/junegunn/fzf
+[submodule "twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf.vim"]
+	path = twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf.vim
+	ignore = dirty
+	url = https://github.com/junegunn/fzf.vim
