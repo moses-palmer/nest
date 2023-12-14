@@ -1,0 +1,18 @@
+##
+# The project marker and configuration file.
+TMUX_PROJECT_FILE=".tmux-project"
+
+##
+# The name of the tmux window option used to mark a pane as running a
+# tmux-project editor.
+TMUX_PROJECT_EDITOR_VAR="@__project_editor"
+
+##
+# The name of the tmux window option used to mark a pane as running a
+# tmux-project shell.
+TMUX_PROJECT_SHELL_VAR="@__project_shell"
+
+##
+# The name of the tmux window option used to set the path to the project
+# specific bash resource file.
+TMUX_PROJECT_FILE_VAR="@__project_file"
