@@ -34,6 +34,7 @@ def initialize():
         configuration = Configuration(
             directories.ROOT / '.gitmodules',
             directories.ROOT / 'configuration.conf',
+            local.CONFIGURATION_FILE,
             distribution=distribution,
             python_version=platforms.Version(tuple(sys.version_info[:3])),
             version=version)
