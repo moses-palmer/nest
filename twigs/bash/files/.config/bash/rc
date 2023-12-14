@@ -1,0 +1,15 @@
+# Check the window size after each command and, if necessary, update the values
+# of LINES and COLUMNS
+shopt -s checkwinsize
+
+
+# The environment files may not have been applied
+if [ "$__ENV_LOADED" != "yes" ]; then
+    . ~/.config/environment.d/ZZ-local-bin.conf
+fi
+
+
+# Include custom sources
+for f in ~/.config/bash/rc.d/*; do
+    . $f
+done

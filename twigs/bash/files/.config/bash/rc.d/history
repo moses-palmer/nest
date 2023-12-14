@@ -1,0 +1,15 @@
+# Make sure the history file is continuously updated
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
+# Append to the history file, don't overwrite it
+shopt -s histappend
+
+# Do not put duplicate lines in the history
+HISTCONTROL="ignoreboth:erasedups"
+
+# Include time stamp in history
+HISTTIMEFORMAT="%h %d %H:%M:%S "
+
+# Keep 10000 entries in the history
+HISTSIZE=10000
+HISTFILESIZE=$HISTSIZE
