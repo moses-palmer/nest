@@ -1,0 +1,174 @@
+#!/bin/sh
+## Returns to the previously checked out commit.
+##
+## Usage: git ret
+##        git ret --list
+##        git ret --prune SIZE
+##        git ret --remember
+##        git ret --undo
+##
+## With no arguments, this script attempts to find the previously checked out
+## commit from the log file. This requires that a post-checkout hook is present
+## in the repository. When the previous commit has been successfully checked out,
+## it is removed from the log.
+##
+## The flag --list lists all remembered commits, --prune limits the number of
+## commits to SIZE, --remember allows logging the current commit and --undo
+## jumps back to the commit from which the last git ret command was issued.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+##
+# The git return log file.
+#
+# If the file does not exist, the script is terminated.
+log_file() {
+    result="$(git rev-parse --git-dir)/return-log"
+    if [ ! -f "$result" ]; then
+        echo "No return log found at $result." >&2
+        exit 1
+    fi
+    echo "$result"
+}
+
+
+##
+# The git return undo file.
+undo_file() {
+    echo "$(git rev-parse --git-dir)/return-undo"
+}
+
+
+##
+# Attempts to convert a commit hash to a display name.
+display() {
+    git name-rev --name-only --no-undefined "$1" 2>/dev/null \
+        || git rev-parse "$1"
+}
+
+
+##
+# Lists all remembered commits.
+#
+# An attempt is made to convert each commit hash to a name.
+list() {
+    log_file="$(log_file)"
+
+    while read line; do
+        display "$line"
+    done < "$log_file"
+}
+
+
+##
+# Prunes the history to contain at most $2 entries.
+prune() {
+    temporary="$(mktemp git-return.XXX)"
+    log_file="$(log_file)"
+    count="$2"
+
+    trap "rm $temporary" EXIT
+    tail -n "$count" "$log_file" > "$temporary"
+    cp "$temporary" "$log_file"
+}
+
+
+##
+# Stores the current commit to the git return log file.
+remember() {
+    log_file="$(log_file)"
+
+    echo "$(git rev-parse HEAD)" >> "$log_file"
+}
+
+
+##
+# Returns to the commit from which the last git-return was made.
+undo() {
+    undo_file="$(undo_file)"
+
+    if [ -f "$undo_file" ]; then
+        checkout "$(cat "$undo_file")"
+    else
+        echo "No undo file found." >&2
+        exit 1
+    fi
+}
+
+
+##
+# Returns to the previous commit.
+ret() {
+    log_file="$(log_file)"
+    previous="$(previous "$log_file")"
+
+    git rev-parse HEAD > "$(undo_file)"
+    if [ -n "$previous" ]; then
+        echo "Checking out $previous..."
+        checkout "$previous"
+        pop "$log_file"
+    else
+        echo "No previous commit found." >&2
+        exit 1
+    fi
+}
+
+
+##
+# Returns the previous commit if any.
+previous() {
+    tail -n1 "$1"
+}
+
+
+##
+# Checks out a commit without invoking the post-checkout hook.
+#
+# An attempt is made to convert the commit hash to a name.
+checkout() {
+    commit="$(display "$1")"
+    GIT_RETURN_IGNORE=1 git checkout "$commit"
+}
+
+
+##
+# Pops the last commit from the log.
+pop() {
+    sed -i '$d' "$1"
+}
+
+
+if [ "$#" = 0 ]; then
+    ret
+    exit 0
+fi
+
+
+case "$1" in
+    --list)
+        list
+        exit 0
+        ;;
+
+    --prune)
+        prune "$2"
+        exit 0
+        ;;
+
+    --remember)
+        remember
+        exit 0
+        ;;
+
+    --undo)
+        undo
+        exit 0
+        ;;
+
+    *)
+        unknown_command "$1"
+        exit 1
+        ;;
+esac
