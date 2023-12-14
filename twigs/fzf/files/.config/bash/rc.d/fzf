@@ -1,0 +1,78 @@
+# Find files by default
+export FZF_DEFAULT_COMMAND="rg \
+    --files \
+    --follow \
+    --smart-case \
+    --glob \"!.git/*\""
+
+# Find content in files; append "-- ''" to use
+export FZF_SEARCH_COMMAND="rg \
+    --column \
+    --line-number \
+    --no-heading \
+    --color=always \
+    --smart-case \
+    --glob \"!.git/*\""
+
+# Provide a preview and border by default
+export FZF_DEFAULT_OPTS=" \
+    --ansi \
+    --border \
+    --info=inline \
+    --preview 'bash \"$HOME/.vim/pack/plugins/opt/fzf.vim/bin/preview.sh\" {}' \
+    --bind 'alt-a:select-all,alt-d:deselect-all'"
+
+
+# Use fzf for command history search
+__search_history() {
+    item="$(history \
+        | fzf --no-preview  --tac --tiebreak=index \
+        | sed 's/^\s*\([0-9]*\).*/\1/g')"
+
+    if [ -n "$item" ]; then
+        READLINE_LINE="$(history -p "!$item")"
+        READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+    fi
+}
+
+
+# Find file names using Ctrl-P
+__search_file_names() {
+    item="$(fzf)"
+
+    if [ -n "$item" ]; then
+        L="$READLINE_LINE"
+        P="$READLINE_POINT"
+        READLINE_LINE="${L:0:$P} $item ${L:$P:${#L}}"
+        READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+    fi
+}
+
+
+# Find in files using Ctrl-K
+__search_files() {
+    local fzf_default_command="$FZF_DEFAULT_COMMAND"
+    FZF_DEFAULT_COMMAND="$FZF_SEARCH_COMMAND -- ''"
+    item="$(fzf | cut -d: -f1)"
+    FZF_DEFAULT_COMMAND="$fzf_default_command"
+
+    if [ -n "$item" ]; then
+        L="$READLINE_LINE"
+        P="$READLINE_POINT"
+        READLINE_LINE="${L:0:$P} $item ${L:$P:${#L}}"
+        READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+    fi
+}
+
+
+# Binding keys is only available in interactive shells
+if [[ $- == *i* ]]; then
+    bind '"\C-r": "\C-x1\eI"'
+    bind -x '"\C-x1": __search_history'
+
+    bind '"\C-p": "\C-x2\eI"'
+    bind -x '"\C-x2": __search_file_names'
+
+    bind '"\C-k": "\C-x3\eI"'
+    bind -x '"\C-x3": __search_files'
+fi
