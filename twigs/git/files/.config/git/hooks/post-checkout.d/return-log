@@ -1,0 +1,18 @@
+#!/bin/sh
+
+[ "$GIT_RETURN_IGNORE" = 1 ] && exit 0
+set -e
+
+PREVIOUS="$1"
+CURRENT="$2"
+FLAG="$3"
+
+
+##
+# The file used to store the commit log.
+LOG_FILE="$GIT_DIR/return-log"
+
+
+if [ "$FLAG" = "1" ] && [ "$CURRENT" != "$PREVIOUS" ]; then
+    echo "$PREVIOUS" >> "$LOG_FILE"
+fi

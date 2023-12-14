@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+##
+# The current hook action.
+export ACTION="$(basename "$0")"
+
+##
+# We run in the git directory.
+export GIT_DIR="$(pwd)/.git"
+
+# Run other hooks for this action
+for hook_dir in "$GIT_DIR/hooks" "$HOME/.config/git/hooks"; do
+    if [ -d "$hook_dir/$ACTION.d/" ]; then
+        for hook in "$hook_dir/$ACTION.d/"*; do
+            if [ -x "$hook" ]; then
+                "$hook" "$@"
+            fi
+        done
+    fi
+done
+

@@ -1,0 +1,111 @@
+#!/bin/sh
+#
+## Transplants a feature branch onto another branch.
+##
+## This script is useful to incorporate a feature branch in a branch other than
+## master.
+##
+## Usage: git transplant FEATURE_BRANCH TARGET_BRANCH [NEW_BRANCH]
+##        git transplant --abort
+##        git transplant --continue
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+##
+# The git directory.
+GIT_DIR="$(git rev-parse --git-dir)"
+
+##
+# The file used to store the transplant feature branch.
+FEATURE_FILE="$GIT_DIR/transplant-feature"
+
+##
+# The file used to store the transplant target branch.
+TARGET_FILE="$GIT_DIR/transplant-target"
+
+
+##
+# Initiates the transplant.
+begin() {
+    if [ -n "$3" ]; then
+        git branch "$3" "$1"
+        feature="$3"
+    else
+        feature="$1"
+    fi
+    start="$(git div "$feature")"
+    end="$(git rev-parse "$feature")"
+    target="$2"
+
+    echo "$feature" > "$FEATURE_FILE"
+    echo "$target" > "$TARGET_FILE"
+    git rebase --onto "$target" "$start" "$end" >/dev/null 2>&1
+}
+
+
+##
+# Aborts a transplant process.
+abort() {
+    if [ ! -f "$TARGET_FILE" ]; then
+        echo "No transplant in progress" >&2
+        exit 1
+    fi
+
+    # Abort a rebase if one is in progress
+    if [ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ]; then
+        git rebase --abort
+    fi
+
+    # Remove the transplant file
+    rm "$TARGET_FILE"
+}
+
+
+##
+# Performs the finalisation of the transplant.
+finalize() {
+    # Continue a rebase if one is in progress
+    if [ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ]; then
+        git rebase --continue >/dev/null 2>&1
+    fi
+
+    # Update the feature branch
+    feature="$(cat "$FEATURE_FILE")"
+    target="$(cat "$TARGET_FILE")"
+    git branch --force "$feature" HEAD
+    git checkout "$feature" >/dev/null 2>&1
+
+    # Remove the transplant files
+    rm "$FEATURE_FILE"
+    rm "$TARGET_FILE"
+}
+
+
+if [ "$#" -gt 1 ]; then
+    if ! begin "$@"; then
+        bold="$(tput bold)"
+        c="$(tput sgr0)"
+        cat <<___
+Failed to transplant ${bold}$1${c} onto ${bold}$2${c}!
+
+Please resolve all merge conflicts, and then run:
+
+    ${bold}git transplant --continue${c}
+
+To abort the process, run:
+
+    ${bold}git transplant --abort${c}
+___
+    else
+        finalize
+    fi
+elif [ "$#" = 1 ] && [ "$1" = "--abort" ]; then
+    abort
+elif [ "$#" = 1 ] && [ "$1" = "--continue" ]; then
+    finalize
+else
+    autohelp
+    exit 1
+fi

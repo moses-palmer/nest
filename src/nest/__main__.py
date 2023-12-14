@@ -206,8 +206,6 @@ def update(
                         ui.log(ui.item(update))
 
     if apply:
-        from twigs import git
-
         with ui.section(ui.bold('Updating twigs'), delay=True):
             print()
             for twig in (t for t in enabled_twigs if len(t.updates) > 0):
@@ -239,6 +237,7 @@ def update(
                         for (twig, updates) in sorted(
                             updates_for_twigs.items(), key=lambda a: a[0]
                         )
+                        if git.is_versioned(_twig(twig))
                     ),
                 ],
                 stdout=subprocess.DEVNULL,

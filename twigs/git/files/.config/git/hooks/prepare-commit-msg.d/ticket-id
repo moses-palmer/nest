@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+## Replaces the token ${ticket-id} in the commit message file with the ticket
+## ID extracted from the current branch name.
+##
+## The ticket ID is extracted using the git configuration option
+## hooks.extract-ticket-id, and it is treated as a sed script. If the script
+## outputs the character '@', it will be replaced with '_'.
+
+if [ "$2" = "template" ]; then
+    sed_script="$(git config get hooks.extract-ticket-id)"
+    git rev-parse --abbrev-ref HEAD
+    if [ -n "$sed_script" ]; then
+        ticket_id="$(git rev-parse --abbrev-ref HEAD \
+            | sed  -e "$sed_script" \
+            | tr @ _)"
+
+        sed -i "s@\${ticket-id}@$ticket_id@" "$1"
+    fi
+fi
