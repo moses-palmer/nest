@@ -1,0 +1,95 @@
+#!/bin/sh
+
+##
+# A list of potential binary names for Python 3
+PYTHON3_EXES="python3 python"
+
+##
+# The directory containing this script
+ROOT="$(realpath "$(dirname "$0")")"
+
+##
+# The git directory.
+GIT_DIR="$ROOT/.git"
+
+##
+# The git hook directory.
+HOOK_DIR="$GIT_DIR/hooks"
+
+##
+# The git hooks.
+HOOKS="post-merge post-checkout"
+
+##
+# A file containing the currently installed nest commit
+TRACKER_FILE="$ROOT/.git/nest-commit"
+
+##
+# The current commit
+CURRENT="$(git --git-dir="$ROOT/.git" --work-tree="$ROOT" rev-parse HEAD)"
+
+
+if [ "$1" = "--only-new-commits" ]; then
+    # Discard the flag
+    shift
+
+    # Is the current commit the one that is already installed?
+    previous="$(cat "$TRACKER_FILE")"
+    if [ "$CURRENT" = "$previous" ]; then
+        echo "No changes."
+        exit
+    fi
+
+    # Is a rebase in progress?
+    if [ -d "$GIT_DIR/rebase-apply" ] || [ -d "$GIT_DIR/rebase-merge" ]; then
+        todo="$GIT_DIR/rebase-merge/git-rebase-todo"
+        if [ "$(wc -l "$todo" | cut -d' ' -f1 )" != 0 ]; then
+            exit
+        fi
+    fi
+fi
+
+
+cd "$ROOT"
+for exe in $PYTHON3_EXES; do
+    # Ignore unavailable binaries
+    if ! which $exe >/dev/null 2>&1; then
+        echo "$exe does not exist"
+        continue
+    fi
+
+    # Ignore Python versions other than 3
+    if ! ( $exe --version | grep 'Python 3' >/dev/null 2>&1 ); then
+        continue
+    fi
+
+    # Make sure submodules are updated
+    git submodule update --init --recursive >/dev/null
+
+    # Run the installer and capture the exit code
+    PATH="$HOME/.local/bin:$PATH" \
+    PYTHONPATH=src \
+    $exe -m nest "$@"
+    ret="$?"
+
+    # Update the tracker file
+    echo "$CURRENT" >"$TRACKER_FILE"
+
+    # Install hooks
+    for hook in $HOOKS; do
+        mkdir -p "$HOOK_DIR"
+        rm -f "$HOOK_DIR/$hook"
+        cat >"$HOOK_DIR/$hook" <<___
+#!/bin/sh
+
+[ -x ./nest ] && ./nest --only-new-commits build
+___
+        chmod a+x "$HOOK_DIR/$hook"
+    done
+
+    exit $ret
+done
+
+
+echo "Python 3 is not available as one of $PYTHON3_EXES" >&2
+exit 1
