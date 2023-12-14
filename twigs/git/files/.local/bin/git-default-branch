@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+## Prints the name of the default branch.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+remote="$(git default-remote 2>/dev/null)"
+if [ -n "$remote" ]; then
+    git symbolic-ref --short "refs/remotes/$remote/HEAD" | sed "s@^$remote/@@"
+else
+    git var GIT_DEFAULT_BRANCH
+fi
