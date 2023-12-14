@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+## Performs a bisect under the assumption that the repository contains a test
+## to perform as staged modifications, and that the current commit is bad.
+##
+## Usage: git bitest GOOD COMMAND [ARGUMENTS..]
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+##
+# The current commit
+HEAD="$(git rev-parse HEAD)"
+
+##
+# The directory used by this script to store the patch and logs.
+export GIT_BITEST_DIR="$(git rev-parse --git-dir)/bitest/$HEAD"
+
+##
+# The patch file
+export GIT_BITEST_PATCH_FILE="$GIT_BITEST_DIR/patch"
+
+
+if [ "$#" -lt 2 ]; then
+    autohelp
+    exit
+elif git diff --cached --exit-code >/dev/null; then
+    autohelp
+    echo
+    echo "No tests staged."
+    exit 1
+fi
+
+##
+# The good revision.
+GOOD="$1"
+shift
+
+# Record the test patch
+mkdir -p "$GIT_BITEST_DIR"
+git diff --cached > "$GIT_BITEST_PATCH_FILE"
+trap "rm -rf $GIT_BITEST_DIR" EXIT
+
+
+bold="$(tput bold)"
+blue="$(tput setaf 12)"
+green="$(tput setaf 10)"
+red="$(tput setaf 9)"
+c="$(tput sgr0)"
+sed \
+    -e "s/^@\(.*\)/$blue@\1$c/" \
+    -e "s/^+\(.*\)/$green+\1$c/" \
+    -e "s/^-\(.*\)/$red-\1$c/" \
+    <"$GIT_BITEST_PATCH_FILE"
+cat <<___
+
+To perform a ${bold}git bisect${c} using the test code above, press return.
+___
+read
+
+
+git stash --quiet
+git -c color.ui=always bisect start HEAD $GOOD
+trap "true \
+    && git bisect reset \
+    && git stash pop --index --quiet \
+    && rm -rf '$GIT_BITEST_DIR'" EXIT
+git -c color.ui=always  bisect run __git-bitest-run "$@"
