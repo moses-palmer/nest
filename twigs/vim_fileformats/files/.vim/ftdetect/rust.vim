@@ -1,0 +1,1 @@
+../pack/plugins/opt/rust.vim/ftdetect/rust.vim
