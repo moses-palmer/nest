@@ -229,6 +229,7 @@ def update(
                         for (twig, updates) in sorted(
                             updates_for_twigs.items(), key=lambda a: a[0]
                         )
+                        if git.is_versioned(_twig(twig))
                     ),
                 ],
                 stdout=subprocess.DEVNULL,
