@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+
+if [ -z "$VIMRUNTIME" ]; then
+    /usr/bin/man --path "$@" >/dev/null
+    VIM_PLUGINS="onedark" \
+    vim \
+        -R \
+        -S ~/.local/lib/vim/man.vim \
+        -c ":Man $@"
+else
+    /usr/bin/man "$@"
+fi
