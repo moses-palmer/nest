@@ -1,0 +1,66 @@
+# Find files by default
+export FZF_DEFAULT_COMMAND="rg \
+    --glob \"!.git/*\" \
+    --files \
+    --follow \
+    --smart-case"
+
+# The base options used by all modes
+export FZF_BASE_OPTS=" \
+    --ansi \
+    --bind='alt-a:select-all,alt-d:deselect-all' \
+    --border \
+    --info=inline"
+export FZF_DEFAULT_OPTS="$FZF_BASE_OPTS \
+    --preview='__fzf-preview {}'"
+
+
+# Use fzf for command history search
+__search_history() {
+    item="$(history \
+        | fzf --no-preview  --tac --tiebreak=index --accept-nth=5..)"
+
+    if [ -n "$item" ]; then
+        READLINE_LINE="$item"
+        READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+    fi
+}
+
+
+# Find file names using Ctrl-P
+__search_file_names() {
+    item="$(__fzf-bash-filename)"
+
+    if [ -n "$item" ]; then
+        L="$READLINE_LINE"
+        P="$READLINE_POINT"
+        READLINE_LINE="${L:0:$P} $item ${L:$P:${#L}}"
+        READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+    fi
+}
+
+
+# Find file contents using Ctrl-K
+__search_file_contents() {
+    item="$(__fzf-bash-grep)"
+
+    if [ -n "$item" ]; then
+        L="$READLINE_LINE"
+        P="$READLINE_POINT"
+        READLINE_LINE="${L:0:$P} $item ${L:$P:${#L}}"
+        READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+    fi
+}
+
+
+# Binding keys is only available in interactive shells
+if [[ $- == *i* ]]; then
+    bind '"\C-r": "\C-x1\eI"'
+    bind -x '"\C-x1": __search_history'
+
+    bind '"\C-p": "\C-x2\eI"'
+    bind -x '"\C-x2": __search_file_names'
+
+    bind '"\C-k": "\C-x3\eI"'
+    bind -x '"\C-x3": __search_file_contents'
+fi
