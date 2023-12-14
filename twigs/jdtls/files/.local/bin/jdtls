@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+import glob
+import os
+import platform
+import shutil
+import subprocess
+import sys
+
+from pathlib import Path
+
+
+#: The environment variable for the Java home directory.
+JAVA_HOME_ENV = 'JAVA_HOME'
+
+#: The name of the Java binary.
+JAVA_BIN = 'java'
+
+#: The path of the jdtls cache directory.
+CACHE_ROOT = Path('~/.cache/jdtls').expanduser()
+
+#: The path to the jdtls installation.
+JDTLS_PATH = Path('~/.local/lib/jdtls').expanduser()
+
+
+def clear():
+    cache = cache_dir(Path.cwd())
+    if cache.is_dir():
+        shutil.rmtree(cache)
+    else:
+        print('The cache directory "{}" does not exist.'.format(cache))
+
+
+def main(java_home: Path, *args):
+    java_executable = java_home / 'bin' / 'java'
+
+    jars = glob.glob(str(JDTLS_PATH / 'plugins'
+        / 'org.eclipse.equinox.launcher_*.jar'))
+    if len(jars) != 1:
+        print('No valid JDTLS installation found!')
+        sys.exit(1)
+    else:
+        jdtls_jar = jars[0]
+
+    platform_path = {
+        'Darwin': 'config_mac',
+        'Linux': 'config_linux',
+        'Windows': 'config_win'}.get(platform.system(), None)
+    if platform_path is None:
+        print('Unsupported platform: {}!'.format(platform.system()))
+        sys.exit(2)
+    else:
+        configuration_path = JDTLS_PATH / platform_path
+
+    cache = cache_dir(Path.cwd())
+
+    subprocess.check_call([
+        java_executable,
+        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        '-Dosgi.bundles.defaultStartLevel=4',
+        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+        '-Dosgi.checkConfiguration=true',
+        '-Dosgi.sharedConfiguration.area=' + str(configuration_path),
+        '-Dosgi.sharedConfiguration.area.readOnly=true',
+        '-Dosgi.configuration.cascaded=true',
+        '-noverify',
+        '-Xms1G',
+        '--add-modules=ALL-SYSTEM',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang=ALL-UNNAMED',
+        '-jar', jdtls_jar,
+        '-data', cache] + list(args))
+
+
+def cache_dir(project: Path) -> Path:
+    """The cache directory for a project.
+
+    :param project: The project path.
+
+    :return: the path to the project cache, which may not necessarily exist
+    """
+    return CACHE_ROOT / str(project.absolute()).replace(os.path.sep, '%')
+
+
+if __name__ == '__main__':
+    def java_home():
+        if JAVA_HOME_ENV in os.environ:
+            return Path(os.environ[JAVA_HOME_ENV])
+        else:
+            java_bin = shutil.which(JAVA_BIN)
+            if java_bin is None:
+                print('$' + name + ' not set')
+                sys.exit(1)
+            else:
+                java_bin = Path(java_bin)
+                while True:
+                    try:
+                        java_bin = java_bin.readlink()
+                    except OSError:
+                        break
+                return java_bin.parent.parent
+
+    if len(sys.argv) == 2 and sys.argv[-1] == '--clear':
+        clear()
+    else:
+        main(java_home(), *sys.argv[1:])
