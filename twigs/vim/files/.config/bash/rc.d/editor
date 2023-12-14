@@ -1,0 +1,2 @@
+# Ensure that the editor is vim
+export EDITOR=vim
