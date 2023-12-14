@@ -1,0 +1,17 @@
+#!/bin/sh
+
+export FZF_PREVIEW_DELIMITER="::"
+export FZF_DEFAULT_OPTS="$FZF_BASE_OPTS \
+    --bind 'enter:become(echo {1})' \
+    --delimiter=$FZF_PREVIEW_DELIMITER \
+    --preview='__fzf-preview {}'"
+
+
+rg \
+    --color=always \
+    --glob '!.git/*' \
+    --field-match-separator="$FZF_PREVIEW_DELIMITER" \
+    --line-number \
+    --no-heading \
+    -- '' \
+    | fzf
