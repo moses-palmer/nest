@@ -1,0 +1,8 @@
+PROJECT="Nest"
+ICON="🪺"
+
+__NEST_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+alias nest="$__NEST_ROOT/nest"
+
+export FZF_DEFAULT_COMMAND="$FZF_DEFAULT_COMMAND --no-ignore --hidden"
+export FZF_SEARCH_COMMAND="$FZF_SEARCH_COMMAND --no-ignore --hidden"

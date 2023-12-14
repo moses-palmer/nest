@@ -1,0 +1,11 @@
+# If this shell is launched in a tmux project, ensure to load the project
+# specific bash resource file
+if [ -n "$TMUX" ] && [ -z "$PROJECT_BASH_RC" ]; then
+    . ~/.config/tmux-project
+    PROJECT_BASH_RC="$(tmux show-window-option \
+        -v "$TMUX_PROJECT_FILE_VAR" 2>/dev/null)"
+fi
+[ -n "$PROJECT_BASH_RC" ] && [ -f "$PROJECT_BASH_RC" ] && . "$PROJECT_BASH_RC"
+
+# This is the shell stage
+TMUX_PROJECT_STAGE="shell"
