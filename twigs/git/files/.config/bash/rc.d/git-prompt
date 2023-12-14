@@ -1,0 +1,16 @@
+if [ -f "/usr/lib/git-core/git-sh-prompt" ]; then
+    . /usr/lib/git-core/git-sh-prompt
+elif [ -f "/usr/share/git-core/contrib/completion/git-prompt.sh" ]; then
+    . /usr/share/git-core/contrib/completion/git-prompt.sh
+elif [ -f "/usr/local/etc/bash_completion.d/git-prompt.sh" ]; then
+    . "/usr/local/etc/bash_completion.d/git-prompt.sh"
+fi
+
+if declare -ft __git_ps1; then
+    export GIT_PS1_SHOWUPSTREAM="git verbose"
+    export GIT_PS1_SHOWDIRTYSTATE="yes"
+    export GIT_PS1_SHOWUNTRACKEDFILES="yes"
+    __PS1="\[\e[1;32m\]\u\[\e[0m\]@\[\e[1m\]\h\[\e[0m:\e[01;36m\]\w\[\e[0m\]\$(__git_ps1)$ "
+else
+    __PS1="\[\e[1;32m\]\u\[\e[0m\]@\[\e[1m\]\h\[\e[0m:\e[01;36m\]\w\[\e[0m\]\$ "
+fi

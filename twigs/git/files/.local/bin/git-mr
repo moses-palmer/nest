@@ -1,0 +1,99 @@
+#!/bin/sh
+#
+## Manages merge requests.
+##
+## Usage: git mr [MR [BRANCH]]
+##
+## When invoked without arguments, all open merge requests are listed. If MR is
+## provided, the merge request identified by MR is checked out as the local
+## branch BRANCH, or mr-MR if BRANCH is not provided.
+##
+## This script will fetch all remote merge requests.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+##
+# Determines the ref pattern for merge requests.
+#
+# The string returned will contain one asterisk which can be replaced by a
+# merge request ID.
+pattern() {
+    # First try a configured pattern
+    pattern="$(git config --get merge-request.pattern || true)"
+
+    # Fall back on guessing
+    if [ -z "$pattern" ]; then
+        remote_url="$(git remote get-url "$(git default-remote)")"
+        if [ "$(expr "$remote_url" : 'git@github.com:')" -gt 0 ] \
+            || [ "$(expr "$remote_url" : 'https://github.com/')" -gt 0 ]; then
+            pattern="refs/pull/*/head"
+        elif [ "$(expr "$remote_url" : 'git@gitlab.com:')" -gt 0 ] \
+            || [ "$(expr "$remote_url" : 'https://gitlab.com/')" -gt 0 ]; then
+            pattern="refs/merge-requests/*/head"
+        else
+            cat >&2 <<___
+Unknown remote repository: $remote_url.
+
+Please set the git configuration value merge-request.pattern to a pattern
+matching merge requests, such as "refs/pull/*/head".
+___
+            exit 1
+        fi
+    fi
+
+    echo "$pattern"
+}
+
+PATTERN="$(pattern)"
+PATTERN_A="$(echo "$PATTERN" | cut -d'*' -f1)"
+PATTERN_B="$(echo "$PATTERN" | cut -d'*' -f2)"
+
+
+##
+# Lists open merge requests.
+list() {
+    git ls-remote "$(git default-remote)" "$PATTERN" | while read line; do
+        commit="$(echo "$line" | cut -f1)"
+        ref="$(echo "$line" | cut -f2)"
+        identifier="$(echo "$ref" \
+            | sed "s:$PATTERN_A\([^/]\+\)$PATTERN_B:\1:")"
+        branch="$(git branch --all --points-at="$commit" \
+            | tail -n1 \
+            | awk -F/ '{ print $NF }')"
+        if ! git cat-file -e "$commit^{commit}" 2>/dev/null; then
+            git fetch --quiet "$(git default-remote)" "$ref"
+        fi
+        if [ -n "$branch" ]; then
+            git show "$commit" \
+                --no-patch \
+                --format="%C(green bold)$identifier%x09%Creset \
+- %C(white bold)%s%Creset %C(normal dim italic)%an <%ae>\
+%n%x09   %C(normal dim italic)$branch%Creset"
+        else
+            git show "$commit" \
+                --no-patch \
+                --format="%C(green bold)$identifier%x09%Creset \
+- %C(white bold)%s%Creset %C(normal dim italic)%an <%ae>"
+        fi
+    done
+}
+
+
+##
+# Checks out a merge request.
+checkout() {
+    identifier="$1"
+    branch="$2"
+
+    git fetch "$(git default-remote)" "$PATTERN_A$identifier$PATTERN_B"
+    git checkout -b "$branch" FETCH_HEAD
+}
+
+
+if [ "$#" = "0" ]; then
+    list
+else
+    checkout "$1" "${2:-mr-$1}"
+fi

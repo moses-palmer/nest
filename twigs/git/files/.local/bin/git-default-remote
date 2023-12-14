@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+## Prints the name of the first remote for the current repository.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+# Get the name of the first remote
+remote="$(git remote show | head -n1)"
+if [ -z "$remote" ]; then
+    echo "No remote found." >&2
+    exit 1
+else
+    echo "$remote"
+fi

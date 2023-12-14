@@ -1,0 +1,80 @@
+[alias]
+    amend = commit --amend
+    ap = add -p
+    changes = log @{upstream}..HEAD
+    cl = stash --keep-index
+    co = checkout
+    cop = checkout -p
+    cp = cherry-pick
+    features = log --first-parent
+    fix = commit --fixup
+    l = log --oneline
+    logg = log --graph --decorate
+    lg = log --graph --decorate --oneline
+    ls = ls-tree --name-only HEAD
+    reb = rebase -i --rebase-merges
+    rep = reset -p
+    st = status
+    subpull = submodule foreach --recursive git pull --all
+[user]
+    name = Moses Palmér
+    email = mosespalmer@gmail.com
+[core]
+    attributesFile = ~/.config/git/attributes
+    editor = vim
+    excludesFile = ~/.config/git/ignore
+    filemode = false
+    pager = __git-pager
+    tabwidth = 4
+    whitespace = blank-at-eol,blank-at-eof,space-before-tab
+
+[color]
+    ui = auto
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+    whitespace = red reverse
+[color "status"]
+    added = green
+    changed = yellow
+    untracked = cyan
+
+[apply]
+    whitespace = fix
+[commit]
+    verbose = true
+[credential]
+    helper = cache
+[diff]
+    colorMoved = default
+[init]
+   templatedir = ~/.config/git/templates
+[interactive]
+    diffFilter = __git-diff-filter
+[merge]
+    conflictstyle = diff3
+[pull]
+   rebase = true
+[push]
+    default = simple
+[rebase]
+    autosquash = true
+    autostash = true
+
+[include]
+    path = local
+
+[delta]
+    features = line-numbers decorations
+    whitespace-error-style = 22 reverse
+    syntax-theme = OneHalfDark
+
+[delta "decorations"]
+    file-style = bold yellow
+    file-decoration-style = none
