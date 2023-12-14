@@ -6,3 +6,5 @@ alias nest="$__NEST_ROOT/nest"
 
 export FZF_DEFAULT_COMMAND="$FZF_DEFAULT_COMMAND --no-ignore --hidden"
 export FZF_SEARCH_COMMAND="$FZF_SEARCH_COMMAND --no-ignore --hidden"
+
+alias asg='sg --lang=python --pattern'
