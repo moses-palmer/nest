@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+import json
+import sys
+
+
+try:
+    for line in sys.stdin:
+        try:
+            result = json.loads(line.strip())
+        except json.JSONDecodeError as e:
+            result = json.loads((line + sys.stdin.read()).strip())
+        json.dump(result, sys.stdout, indent=4)
+        sys.stdout.write('\n')
+except json.JSONDecodeError as e:
+    sys.stderr.write(f'Invalid JSON input: {e}\n')
+except KeyboardInterrupt:
+    pass
