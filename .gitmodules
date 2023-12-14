@@ -38,3 +38,11 @@
 	path = twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf.vim
 	ignore = dirty
 	url = https://github.com/junegunn/fzf.vim
+[submodule "twigs/vim_git/files/.vim/pack/plugins/opt/vim-fugitive"]
+	path = twigs/vim_git/files/.vim/pack/plugins/opt/vim-fugitive
+	ignore = dirty
+	url = https://github.com/tpope/vim-fugitive
+[submodule "twigs/vim_git/files/.vim/pack/plugins/opt/vim-gitgutter"]
+	path = twigs/vim_git/files/.vim/pack/plugins/opt/vim-gitgutter
+	ignore = dirty
+	url = https://github.com/airblade/vim-gitgutter
