@@ -1,0 +1,7 @@
+"""{description}
+"""
+
+from .. import pip
+
+
+main = pip.package(name='{crate}')
