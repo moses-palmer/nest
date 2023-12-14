@@ -1,0 +1,129 @@
+#!/bin/bash
+
+. ~/.config/tmux-project
+. ~/.local/lib/bash/tmux-project
+
+
+# We must source this explicitly, since ~/.bashrc bails in command mode
+set -o vi
+source ~/.config/bash/rc
+set -eu
+
+
+if [ -d "$1" ]; then
+    ROOT="$1"
+else
+    ROOT="$(pwd)"
+fi
+if [ -n "$2" ]; then
+    WINDOW="$2"
+else
+    WINDOW="$(tmux display-message -p "#{window_id}")"
+fi
+if [ -n "$3" ]; then
+    PANE="$3"
+else
+    PANE="$(tmux display-message -p "#{pane_id}")"
+fi
+
+
+##
+# A project local bash resource file.
+PROJECT_BASH_RC="$ROOT/$TMUX_PROJECT_FILE"
+[ -f "$PROJECT_BASH_RC" ] && TMUX_PROJECT_STAGE=main . "$PROJECT_BASH_RC"
+
+##
+# The name of the current project.
+PROJECT="${PROJECT:-$(basename "$ROOT")}"
+
+##
+# The icon displayed for the window.
+ICON="${ICON:-📂}"
+
+##
+# The width of the editor pane.
+WIDTH="${WIDTH:-60%}"
+
+##
+# A project local bash history file.
+PROJECT_BASH_HISTFILE="$HOME/.cache/bash/history/$PROJECT"
+
+
+##
+# Ensures that a local bash history file exists for the current project.
+ensure_bash_history() {
+    if [ ! -f "$PROJECT_BASH_HISTFILE" ]; then
+        [ -f ~/.bash_history ] && cp ~/.bash_history "$PROJECT_BASH_HISTFILE"
+    fi
+}
+
+
+##
+# Launches vim in a new pane and outputs its ID to STDOUT.
+launch_editor() {
+    tmux split-window \
+        -b \
+        -c "$ROOT" \
+        -e HISTFILE="$PROJECT_BASH_HISTFILE"  \
+        -f \
+        -h \
+        -t "$PANE" \
+        -P -F "#{pane_id}" \
+        bash -lic "
+            export TMUX_PROJECT_STAGE=editor ;
+            [ -f $PROJECT_BASH_RC ] && . $PROJECT_BASH_RC ;
+            vim +'if filereadable(\".vimrc\") | source .vimrc'"
+}
+
+
+##
+# Replaces the shell in the original pane.
+#
+# To pass the local environment we use --rcfile with a temporary FIFO to make
+# bash load normal startup files in addition to the current environment.
+#
+# We use a FIFO instead of <(...) since the command is executed by tmux and
+# file descriptors are not passed to the command in respawn-pane.
+replace_shell() {
+    rcfile="$(mktemp -u)"
+    mkfifo "$rcfile"
+    tmux respawn-pane \
+        -c "$ROOT" \
+        -e HISTFILE="$PROJECT_BASH_HISTFILE" \
+        -k \
+        -t "$PANE" \
+        bash --rcfile "$rcfile" -i
+    cat > "$rcfile" <<___
+export TMUX_PROJECT_STAGE=shell
+[ -f /etc/profile ]       && . /etc/profile
+[ -f ~/.bashrc ]          && . ~/.bashrc
+[ -f "$PROJECT_BASH_RC" ] && . "$PROJECT_BASH_RC"
+___
+    rm "$rcfile"
+}
+
+
+# If the window is not currently an editor window, make it one
+if ! tmux_project_has_edit_window "$WINDOW"; then
+    # Make sure we have a local history file
+    ensure_bash_history
+
+    # Launch the editor pane and mark this window as an editor window
+    tmux set-window-option \
+        -t "$WINDOW" \
+        "$TMUX_PROJECT_VAR" \
+        "$(launch_editor)"
+
+    # Replace the shell in the current pane
+    replace_shell
+
+    # Rename window to make it easier to find
+    tmux rename-window -t "$WINDOW" "$ICON $PROJECT"
+fi
+
+
+# Apply the fixed layout
+tmux set-window-option \
+    main-pane-width "$WIDTH"
+tmux select-layout \
+    main-vertical
