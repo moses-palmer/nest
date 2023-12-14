@@ -46,3 +46,11 @@
 	path = twigs/vim_git/files/.vim/pack/plugins/opt/vim-gitgutter
 	ignore = dirty
 	url = https://github.com/airblade/vim-gitgutter
+[submodule "twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree"]
+	path = twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree
+	ignore = dirty
+	url = https://github.com/scrooloose/nerdtree
+[submodule "twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree-git-plugin"]
+	path = twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree-git-plugin
+	ignore = dirty
+	url = https://github.com/Xuyuanp/nerdtree-git-plugin
