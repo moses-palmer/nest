@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+## Generates a classpath from a list of maven coordinates.
+##
+## Usage: maven-dependencies GROUP:ARTIFACT:VERSION...
+
+. ~/.local/lib/bash/autohelp
+
+
+##
+# The maven repository base.
+BASE="$HOME/.m2/repository"
+
+
+for dep in "$@"; do
+    group="$(echo "$dep" | cut -d: -f1)"
+    artifact="$(echo "$dep" | cut -d: -f2)"
+    version="$(echo "$dep" | cut -d: -f3)"
+    if [ -z "$group" -o -z "$artifact" -o -z "$version" ]; then
+        echo "Invalid dependency coordinates: $dep" >&2
+        exit 1
+    fi
+
+    directory="$BASE/$(echo "$group" | sed 's:\.:/:g')/$artifact/$version"
+    name="$artifact-$version.jar"
+    path="$directory/$name"
+    if [ ! -f "$path" ]; then
+        echo "Dependency $dep not found at $path" >&2
+        exit 1
+    fi
+
+    CLASSPATH="${CLASSPATH}${CLASSPATH:+:}$path"
+done
+
+echo "$CLASSPATH"
