@@ -1,0 +1,9 @@
+"""{description}
+"""
+
+from .. import rust
+
+
+main = rust.crate(
+    name='{crate}',
+    from_repository=${repository})
