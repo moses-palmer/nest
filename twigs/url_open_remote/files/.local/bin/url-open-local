@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+## Sends a URL to the communication channel.
+##
+## Usage: url-open-local URL
+
+. ~/.local/lib/bash/autohelp
+. "$HOME/.config/url-open.rc"
+
+
+if [ "$#" -lt 1 ]; then
+    autohelp
+    exit 1
+fi
+
+
+if [ ! -p "$FIFO" ]; then
+    log "$FIFO is not a named pipe!"
+    exit 1
+else
+    echo "$1" >> "$FIFO"
+fi
