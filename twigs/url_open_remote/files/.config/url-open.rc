@@ -1,0 +1,7 @@
+FIFO="$HOME/.cache/url-remote.ipc"
+
+##
+# Writes a log message to the system log.
+log() {
+    echo "$1" | systemd-cat --identifier "url-remote"
+}
