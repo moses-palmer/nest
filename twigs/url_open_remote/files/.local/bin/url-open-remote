@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Launches an agent that listens for URLs passed through a communication
+# channel.
+
+. "$HOME/.config/url-open.rc"
+
+
+log "Started on display Wayland<$WAYLAND_DISPLAY> / Xorg<$DISPLAY>"
+if ! which url-open 1>/dev/null 2>&1; then
+    log "The binary url-open is not available; terminating"
+    exit 1
+fi
+
+
+# Ensure we have a FIFO
+rm -f "$FIFO"
+mkfifo "$FIFO"
+trap "rm -f $FIFO" EXIT
+
+# Continuously open URLs fed through the FIFO
+while true; do
+    if read url < "$FIFO"; then
+        log "Opening $url..."
+        if ! url-open "$url"; then
+            log "Failed to open $url!"
+        fi
+    fi
+done
+
+log "Stopped"
