@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+## Opens a URL on a remote host.
+##
+## Hosts are configured in ~/.config/url-open-hosts as a list of environment
+## variables, where the name is the host and the value a regular expression
+## matching URLs this host is responsible for.
+##
+## Communication with the host is over SSH.
+##
+## Usage: url-open [URL]
+##
+## If URL is not specified, the URL is read from STDIN.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+CONFIGURATION_FILE="$HOME/.config/url-open-hosts"
+if ! [ -f "$CONFIGURATION_FILE" ]; then
+    autohelp
+    exit 1
+fi
+
+HOSTS="$(grep '.*=.*' "$CONFIGURATION_FILE" | cut -d= -f1)"
+. "$CONFIGURATION_FILE"
+
+
+if [ "$#" -gt 0 ]; then
+    url="$@"
+else
+    url="$(cat)"
+fi
+
+
+for host in $HOSTS; do
+    # Expand indirectly, like ${!host} in bash
+    eval host_re=\"\$$host\"
+    if echo "$url" | grep --quiet "$host_re"; then
+        echo "Opening $url on $host"
+        ssh "$host" url-open-local "\"$url\""
+        exit 0
+    fi
+done
+
+echo "No host found for $url"
