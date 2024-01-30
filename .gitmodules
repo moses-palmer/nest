@@ -70,3 +70,6 @@
 	path = twigs/vim_vimspector/files/.vim/pack/plugins/opt/vimspector
 	ignore = dirty
 	url = https://github.com/puremourning/vimspector
+[submodule "twigs/vim_wgsl/files/.vim/pack/plugins/opt/wgsl.vim"]
+	path = twigs/vim_wgsl/files/.vim/pack/plugins/opt/wgsl.vim
+	url = https://github.com/DingDean/wgsl.vim
