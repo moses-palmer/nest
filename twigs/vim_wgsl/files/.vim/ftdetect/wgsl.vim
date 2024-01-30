@@ -1,0 +1,1 @@
+../pack/plugins/opt/wgsl.vim/ftdetect/wgsl.vim
