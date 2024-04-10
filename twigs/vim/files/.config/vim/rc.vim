@@ -141,6 +141,10 @@ try
         set termguicolors
         colorscheme onedark
         highlight ColorColumn guibg=#353535
+
+        " Switch these highlight groups to work better with OneDark
+        highlight link BufTabLineCurrent PmenuSel
+        highlight link BufTabLineActive TabLineSel
     else
         colorscheme noctu
     endif
