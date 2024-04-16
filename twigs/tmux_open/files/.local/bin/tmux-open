@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+
+# Copy the current selection if any
+tmux send -X copy-selection-and-cancel \
+    && tmux save-buffer - | g
