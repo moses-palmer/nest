@@ -60,12 +60,15 @@
 [merge]
     conflictstyle = diff3
 [pull]
-   rebase = true
+    rebase = true
 [push]
     default = simple
 [rebase]
     autosquash = true
     autostash = true
+[rerere]
+    enabled = true
+    autoupdate = true
 
 [include]
     path = local
