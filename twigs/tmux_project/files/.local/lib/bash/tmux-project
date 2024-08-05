@@ -41,8 +41,15 @@ Do you still want to load the vim resource file?" \
     tmux "$@" bash -lic "
         export TMUX_PROJECT_STAGE=editor ;
         [ -f $PROJECT_BASH_RC ] && . $PROJECT_BASH_RC ;
-        vim +'if filereadable(\"$PROJECT_VIM_RC\") \
-            | source $PROJECT_VIM_RC'"
+        VIMINFO=\"$HOME/.cache/vim/viminfo/$PROJECT\" ;
+        if [ ! -f \"\$VIMINFO\" ]; then
+            mkdir -p \"\$(dirname \"\$VIMINFO\")\" && touch \"\$VIMINFO\" ;
+        fi ;
+        vim \
+            -i \"\$VIMINFO\" \
+            +'set viminfo+=% | rviminfo \
+            | if filereadable(\"$PROJECT_VIM_RC\") \
+                | source $PROJECT_VIM_RC'"
 }
 
 
