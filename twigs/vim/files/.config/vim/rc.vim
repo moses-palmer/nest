@@ -112,12 +112,23 @@ autocmd BufWritePre * if index(whitespace_blacklist, &ft) < 0 | %s/\s\+$//e
 let s:plugin_dir = expand('~/.config/vim/plugins/')
 if exists('$VIM_PLUGINS')
     for f in split($VIM_PLUGINS, ':')
-        exe 'source' s:plugin_dir . f . '.vim'
+        if has('nvim') && filereadable(s:plugin_dir . f . '.lua')
+            exe 'source' s:plugin_dir . f . '.lua'
+        else
+            exe 'source' s:plugin_dir . f . '.vim'
+        endif
     endfor
 else
     " Sort file names to ensure consistent order
     for f in sort(readdir(s:plugin_dir, '1'))
-        exe 'source' s:plugin_dir . f
+        if !has('nvim') && f =~ '.lua$'
+            continue
+        elseif has('nvim') && f =~ '.vim$'
+        \   && file_readable(join(split(f, '.')[:-2], '.') . '.lua')
+            continue
+        else
+            exe 'source' s:plugin_dir . f
+        endif
     endfor
 endif
 
@@ -125,12 +136,18 @@ endif
 " Load other configurations; sort file names to ensure consistent order
 let s:rc_dir = expand('~/.config/vim/rc.d/')
 for f in sort(readdir(s:rc_dir, '1'))
-    exe 'source' s:rc_dir . f
+    if  has('nvim') && f =~ '.lua$'
+        exe 'source' s:rc_dir . f
+    elseif f =~ '.vim$'
+        exe 'source' s:rc_dir . f
+    endif
 endfor
 
 
 " Allow local overrides
-if filereadable(expand('~/.config/vim/local.vim'))
+if has('nvim') && filereadable(expand('~/.config/vim/local.lua'))
+    exe 'source' '~/.config/vim/local.vim'
+elseif filereadable(expand('~/.config/vim/local.vim'))
     exe 'source' '~/.config/vim/local.vim'
 endif
 
