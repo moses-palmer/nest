@@ -116,7 +116,7 @@ if exists('$VIM_PLUGINS')
     endfor
 else
     " Sort file names to ensure consistent order
-    for f in readdir(s:plugin_dir, '1', { 'sort': 'case' })
+    for f in sort(readdir(s:plugin_dir, '1'))
         exe 'source' s:plugin_dir . f
     endfor
 endif
@@ -124,7 +124,7 @@ endif
 
 " Load other configurations; sort file names to ensure consistent order
 let s:rc_dir = expand('~/.config/vim/rc.d/')
-for f in readdir(s:rc_dir, '1',  { 'sort': 'case' })
+for f in sort(readdir(s:rc_dir, '1'))
     exe 'source' s:rc_dir . f
 endfor
 
