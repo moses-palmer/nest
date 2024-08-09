@@ -1,0 +1,1 @@
+../../../.vim/nerdtree_plugin/quickshell.vim
