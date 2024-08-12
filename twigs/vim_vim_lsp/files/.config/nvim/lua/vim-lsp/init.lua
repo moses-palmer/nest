@@ -2,7 +2,33 @@ vim.cmd('packadd! nvim-cmp')
 vim.cmd('packadd! cmp-nvim-lsp')
 vim.cmd('packadd! vim-vsnip')
 vim.cmd('packadd! cmp-vsnip')
+vim.cmd('packadd! actions-preview.nvim')
 vim.cmd('packadd! nvim-lspconfig')
+
+
+require'actions-preview'.setup {
+    diff = {
+        ctxlen = 3,
+    },
+    highlight_command = {
+        require('actions-preview.highlight').delta(),
+    },
+    backend = { 'telescope' },
+    telescope = {
+        sorting_strategy = 'ascending',
+        layout_strategy = 'vertical',
+        layout_config = {
+            width = 0.8,
+            height = 0.9,
+            prompt_position = 'top',
+            preview_cutoff = 20,
+            preview_height = function(_, _, max_lines)
+                return max_lines - 15
+            end,
+        },
+    },
+}
+
 
 local cmp = require'cmp'
 cmp.setup({
@@ -33,6 +59,7 @@ cmp.setup({
 
 vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(args)
+        local actions_preview = require'actions-preview'
         local telescope = require'telescope.builtin'
         local options = { buffer = args.buf }
         local split = function(callback)
@@ -43,7 +70,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
             end
         end
 
-        vim.keymap.set('n', 'ga', vim.lsp.buf.code_action, options)
+        vim.keymap.set('n', 'ga', actions_preview.code_actions, options)
         vim.keymap.set('n', 'gA', vim.lsp.codelens.run, options)
         vim.keymap.set('n', 'rr', vim.lsp.buf.rename, options)
 
