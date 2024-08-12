@@ -95,3 +95,6 @@
 	path = twigs/vim_fzf/files/.config/nvim/pack/nvim/start/telescope.nvim
 	url = https://github.com/nvim-telescope/telescope.nvim
 	branch = 0.1.x
+[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim"]
+	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim
+	url = https://github.com/aznhe21/actions-preview.nvim
