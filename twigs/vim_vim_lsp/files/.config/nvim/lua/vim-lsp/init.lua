@@ -30,8 +30,10 @@ cmp.setup({
         })
 })
 
+
 vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(args)
+        local telescope = require'telescope.builtin'
         local options = { buffer = args.buf }
         local split = function(callback)
             return function()
@@ -40,6 +42,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
                 vim.cmd('wincmd L')
             end
         end
+
         vim.keymap.set('n', 'ga', vim.lsp.buf.code_action, options)
         vim.keymap.set('n', 'gA', vim.lsp.codelens.run, options)
         vim.keymap.set('n', 'rr', vim.lsp.buf.rename, options)
@@ -53,19 +56,32 @@ vim.api.nvim_create_autocmd('LspAttach', {
             'n', '<C-LeftMouse>',
             '<LeftMouse>:lua vim.lsp.buf.definition()<CR>', options)
 
-        vim.keymap.set( 'n', 'gi', vim.lsp.buf.implementation, options)
+        vim.keymap.set( 'n', 'gi', telescope.lsp_implementations, options)
 
         vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, options)
         vim.keymap.set('n', 'gT', split(vim.lsp.buf.type_definition), options)
 
-        vim.keymap.set('n', 'gh', vim.lsp.buf.incoming_calls, options)
-        vim.keymap.set('n', 'gH', vim.lsp.buf.outgoing_calls, options)
-        vim.keymap.set('n', 'gr', vim.lsp.buf.references, options)
+        vim.keymap.set('n', 'gh', telescope.lsp_incoming_calls, options)
+        vim.keymap.set('n', 'gH', telescope.lsp_outgoing_calls, options)
+        vim.keymap.set('n', 'gr', telescope.lsp_references, options)
 
-        vim.keymap.set('n', 'gs', vim.lsp.buf.document_symbol, options)
+        vim.keymap.set('n', 'gs', telescope.lsp_document_symbols, options)
+        vim.keymap.set('n', 'gS', telescope.lsp_workspace_symbols, options)
 
         vim.keymap.set('n', 'K', vim.lsp.buf.hover, options)
 
+        vim.keymap.set('n', 'ge', function()
+            telescope.diagnostics {
+                bufnr = 0,
+                no_sign = true,
+            }
+        end, options)
+        vim.keymap.set('n', 'gE', function()
+            telescope.diagnostics {
+                bufnr = nil,
+                no_sign = true,
+            }
+        end, options)
         vim.keymap.set('n', '<M-K>', vim.diagnostic.open_float, options)
         vim.keymap.set('n', '<M-Down>', vim.diagnostic.goto_next, options)
         vim.keymap.set('n', '<M-Up>', vim.diagnostic.goto_prev, options)
