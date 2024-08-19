@@ -106,10 +106,12 @@ if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
 
     # Replace the shell in the current pane
     if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_SHELL_VAR"; then
-        tmux set-window-option \
-            -t "$WINDOW" \
-            "$TMUX_PROJECT_SHELL_VAR" \
-            "$(replace_shell)"
+        if [ -z "${TMUX_PROJECT_FORCE_NEW_SHELL+x}" ]; then
+            tmux set-window-option \
+                -t "$WINDOW" \
+                "$TMUX_PROJECT_SHELL_VAR" \
+                "$(replace_shell)"
+        fi
     fi
 fi
 
