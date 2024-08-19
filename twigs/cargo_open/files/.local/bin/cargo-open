@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+## Opens a checked out crate from the local repository using tmux-project.
+##
+## This command takes no arguments: selection is performed using fzf.
+
+set -e
+shift
+. ~/.local/lib/bash/autohelp
+
+
+##
+# Extracts the actual path from the fzf output.
+CARGO_TOML_PREVIEW="bat --language=TOML --color=always --decorations=never \
+    \"\$(echo {} | sed 's/::.*$//')/Cargo.toml\""
+
+
+path="$(find ~/.cargo/registry/src/ -mindepth 2 -maxdepth 2 \
+    | awk -F/ '{ print $0 "::" $NF }' \
+    | fzf \
+        --delimiter="::" \
+        --nth=1 \
+        --with-nth=2 \
+        --bind 'enter:become(echo {1})' \
+        --preview="$CARGO_TOML_PREVIEW")"
+echo "$path"
+if [ -d "$path" ]; then
+    tmux new-window \
+        -c "$path" \
+        "env TMUX_PROJECT_FORCE_NEW_SHELL=1 tmux-project"
+fi
