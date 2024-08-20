@@ -13,17 +13,34 @@ set noswapfile
 set nowrap
 set readonly
 
-nnoremap <PageUp> :call <SID>jump_to_file('b')<CR>
-nnoremap <PageDown> :call <SID>jump_to_file('')<CR>
-nnoremap <S-PageUp> :call <SID>jump_to_commit('b')<CR>
-nnoremap <S-PageDown> :call <SID>jump_to_commit('')<CR>
-nnoremap <leader>g :call <SID>open_modifications()<CR>
-nnoremap <2-LeftMouse> :call <SID>open_modifications()<CR>
-nnoremap <buffer> <F10> :call <SID>toggle_word_diff()<CR>
-nnoremap <Up> <C-y>
-nnoremap <Down> <C-e>
-nnoremap <S-UP> k
-nnoremap <S-Down> j
+nnoremap <silent> <PageUp> :call <SID>jump_to_file('b')<CR>
+nnoremap <silent> <PageDown> :call <SID>jump_to_file('')<CR>
+nnoremap <silent> <S-PageUp> :call <SID>jump_to_commit('b')<CR>
+nnoremap <silent> <S-PageDown> :call <SID>jump_to_commit('')<CR>
+nnoremap <silent> <leader>g :call <SID>open_modifications()<CR>
+nnoremap <silent> <2-LeftMouse> :call <SID>open_modifications()<CR>
+nnoremap <silent> <F10> :call <SID>toggle_word_diff()<CR>
+nnoremap <silent> <Up> <C-y>
+nnoremap <silent> <Down> <C-e>
+nnoremap <silent> <S-UP> k
+nnoremap <silent> <S-Down> j
+
+
+" A pattern to find the commit header and extract the commit.
+let g:COMMIT_RE = ['^commit ([0-9a-h]\{7\})', 1]
+
+" A pattern to find the diff header for a file pair.
+let g:START_RE = ['^diff \(--git\)', 1]
+
+" A pattern to find the file revisions and extract the revisions.
+let g:INDEX_RE = ['^index \([0-9a-f]*\)\.\.\([0-9a-f]*\) [0-9]*', 2]
+
+" A pattern to find the file names and extract the paths.
+let g:FILE_A_RE = ['^--- a/\(.*\)', 1]
+let g:FILE_B_RE = ['^+++ b/\(.*\)', 1]
+
+" A pattern to find a chunk and extract the line numbers.
+let g:CHUNK_RE = ['^@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@', 4]
 
 " Whether to use a word diff for change listing
 let g:review#word_diff = 1
@@ -31,65 +48,52 @@ let g:review#word_diff = 1
 " The main window is the parent window
 let g:review#win_parent = win_getid()
 
+" The search pattern to use when a terminal job completes to return to the
+" previous position.
+let g:review#search = ''
+autocmd TermClose * if len(g:review#search) > 0
+\   | call search(g:review#search, '')
+\   | normal zt
+\   | endif
+
 
 " Create the chunk signs
-execute('sign define review_s text=↘ linehl= texthl=SignColumn')
-execute('sign define review_c text=→ linehl=DiffText texthl=SignColumn')
-execute('sign define review_e text=↗ linehl= texthl=SignColumn')
-
-" The change listing is ANSI coded
-AnsiEsc
+sign define review_s text=↘ linehl= texthl=SignColumn
+sign define review_c text=→ linehl=DiffText texthl=SignColumn
+sign define review_e text=↗ linehl= texthl=SignColumn
 
 
 " Loads the change listing.
 function! s:load_changes()
-    " Update the current file name
-    file $REVIEW_SOURCE -> $REVIEW_TARGET
-
     " Make sure we focus the parent window
     call s:goto_parent()
 
-    " Store the current file and commit so we can return; move one line down to
-    " include the current line although we search backwards
-    execute('normal j')
-    if search('diff --git ', 'bcW')
-        let l:path = getline('.')
-        call search('commit [0-9a-h]\{7\}', 'bcW')
-        let l:commit = split(getline('.'))[1]
+    " Store the current start tag or commit so we can return
+    if search(g:START_RE[0], 'bcW') || search(g:COMMIT_RE[0], 'bcW')
+        let g:review#search = getline('.')
+    else
+        let g:review#search = ''
     endif
 
-    " Allow modifications while we update
-    setlocal modifiable
-
-    " Clear the buffer
-    execute('%d')
-
-    " Read the change listing
+    " Read the change listing and update the current file name
     if g:review#word_diff
         let l:git_command = 'lc --ignore-all-space'
     else
         let l:git_command = 'log --patch --color=always'
     endif
-    silent! execute('0read !' .
-        \ 'git ' .
-        \ l:git_command . ' ' .
-        \ '--unified=1 ' .
-        \ '--reverse ' .
-        \ $REVIEW_TARGET . '..' . $REVIEW_SOURCE)
-    AnsiEsc!
+    bd
+    silent! execute('terminal ' .
+    \   'git ' .
+    \   '--no-pager ' .
+    \   l:git_command . ' ' .
+    \   '--unified=1 ' .
+    \   '--reverse ' .
+    \   $REVIEW_TARGET . '..' . $REVIEW_SOURCE)
+    file $REVIEW_SOURCE -> $REVIEW_TARGET
+
+    0
     setlocal nomodified
-
-    " Move to a sensible location
-    execute('0')
-    if exists('l:commit')
-        call search('commit ' . l:commit, '')
-        call search(l:path, '')
-        execute('normal zt')
-    endif
-
     set modifiable<
-
-    " Add buffer local mappings to quit
     nnoremap <buffer> q :qa<CR>
 endfunction
 
@@ -97,30 +101,45 @@ endfunction
 " Finds the files for the current git diff section and opens them in new
 " windows.
 function! s:open_modifications()
-    " Find the header line before the current line
-    let l:m = s:find_header(line('.'))
+    let l:lineno = line('.')
+
+    " Find the header line
+    if !search(g:START_RE[0], 'bcW')
+        return
+    endif
+    let l:start_lineno = line('.')
+
+    " Find the revisions
+    let l:m = s:next_match(g:INDEX_RE)
     if empty(l:m)
-        echo('Failed to locate diff file header.')
+        echo('Failed to locate index.')
         return
     else
-        let [l:lineno, l:path_a, l:path_b] = l:m
+        let [l:rev_a, l:rev_b] = l:m
     endif
 
-    " Find the start of the current hunk
-    let l:m = s:find_hunk(line('.'))
+    let l:m = s:next_match(g:FILE_A_RE)
+    if empty(l:m)
+        echo('Failed to locate files.')
+        return
+    else
+        let [l:path_a] = l:m
+    endif
+
+    let l:m = s:next_match(g:FILE_B_RE)
+    if empty(l:m)
+        echo('Failed to locate files.')
+        return
+    else
+        let [l:path_b] = l:m
+    endif
+
+    " Find the start of the current chunk
+    let l:m = s:find_previous_chunk(l:lineno)
     if empty(l:m)
         let [l:hunk_a_lineno, l:hunk_b_lineno] = [1, 1]
     else
         let [l:hunk_a_lineno, l:hunk_b_lineno] = l:m
-    endif
-
-    " Find the revisions
-    let l:m = s:extract_revisions(getline(l:lineno + 1))
-    if empty(l:m)
-        echo('Failed to locate revisions.')
-        return
-    else
-        let [l:rev_a, l:rev_b] = l:m
     endif
 
     " Close any previous child windows
@@ -129,17 +148,17 @@ function! s:open_modifications()
     endif
 
     " Find the chunks
-    let [l:chunks_a, l:chunks_b] = s:find_chunks(l:lineno)
+    let [l:chunks_a, l:chunks_b] = s:find_chunks(l:start_lineno)
 
     " Open the files
     below vnew
     let l:win_a = win_getid()
-    silent! call s:open_at_rev(
+    silent call s:open_at_rev(
         \ 'a', l:path_a, l:rev_a, l:chunks_a, l:hunk_a_lineno)
 
     belowright new
     let l:win_b = win_getid()
-    silent! call s:open_at_rev(
+    silent call s:open_at_rev(
         \ 'b', l:path_b, l:rev_b, l:chunks_b, l:hunk_b_lineno)
 
     " Return to the main window and store the child window IDs
@@ -208,15 +227,15 @@ endfunction
 
 " Jumps to a file by searching for a file diff header line.
 function! s:jump_to_file(flags)
-    call search('^[^\p]*diff --git a/.*', a:flags)
-    execute('normal zt')
+    call search(g:START_TAG, a:flags)
+    normal zt
 endfunction
 
 
 " Jumps to a commit by searching for a commit header line.
 function! s:jump_to_commit(flags)
-    call search('^[^\p]*commit [0-9a-f]\{7\}', a:flags)
-    execute('normal zt')
+    call search(g:COMMIT_TAG, a:flags)
+    normal zt
 endfunction
 
 
@@ -258,57 +277,21 @@ function! s:for_parent(cmd)
 endfunction
 
 
-" Finds the currently selected commit.
-function! s:find_commit(lineno)
-    let l:lineno = a:lineno
-    while l:lineno > 0
-        let l:m = matchlist(getline(l:lineno), 'commit \([a-h0-9]\{7\}\)')
-        if empty(l:m)
-            let l:lineno = l:lineno - 1
-            continue
-        else
-            return l:m[1]
-        endif
-    endwhile
-endfunction
-
-
-" Finds the diff header by starting at the current line and moving up until a
+" Finds the chunk header by starting at the current line and moving up until a
 " header is found.
-function! s:find_header(lineno)
+function! s:find_previous_chunk(lineno)
     let l:lineno = a:lineno
     while l:lineno > 0
-        let l:m = s:extract_header(getline(l:lineno))
+        let l:m = s:match(l:lineno, g:CHUNK_RE)
+        let l:lineno = l:lineno - 1
         if empty(l:m)
-            let l:lineno = l:lineno - 1
-            continue
-        else
-            let [l:file_a, l:file_b] = l:m
-
-            " If this is a new or deleted file, skip the line stating that
-            if !empty(matchlist(
-                    \ getline(l:lineno + 1),
-                    \ '\(deleted\|new\) file mode [0-9]*'))
-                let l:lineno = l:lineno + 1
+            if empty(s:match(l:lineno, g:START_RE))
+                continue
+            else
+                break
             endif
-
-            return [l:lineno, l:file_a, l:file_b]
-        endif
-    endwhile
-endfunction
-
-
-" Finds the hunk header by starting at the current line and moving up until a
-" header is found.
-function! s:find_hunk(lineno)
-    let l:lineno = a:lineno
-    while l:lineno > 0
-        let l:m = s:extract_hunk(getline(l:lineno))
-        if empty(l:m)
-            let l:lineno = l:lineno - 1
-            continue
         else
-            return l:m
+            return [l:m[0], l:m[2]]
         endif
     endwhile
 endfunction
@@ -325,10 +308,9 @@ function! s:find_chunks(lineno)
     let l:lineno = a:lineno
     while l:lineno <= line('$')
         let l:lineno = l:lineno + 1
-        let l:m = s:extract_line_numbers(getline(l:lineno))
+        let l:m = s:match(l:lineno, g:CHUNK_RE)
         if empty(l:m)
-            let l:m = s:extract_header(getline(l:lineno))
-            if empty(l:m)
+            if empty(s:match(l:lineno, g:START_RE))
                 continue
             else
                 break
@@ -351,15 +333,15 @@ function! s:open_at_rev(prefix, path, rev, chunks, lineno)
     " Open the file at the specified revision
     let l:file = a:prefix . '/' . a:path
     setlocal bufhidden=wipe
-        \ buftype=nofile
-        \ modifiable
-        \ nobuflisted
-        \ nowrap
-        \ number
+    \   buftype=nofile
+    \   modifiable
+    \   nobuflisted
+    \   nowrap
+    \   number
     if match(a:rev, '^0\+$') == -1
         execute('0read !git show ' . a:rev . ' -- ' . a:path)
         execute('file ' . l:file)
-        execute('filetype detect')
+        filetype detect
     endif
     setlocal nomodifiable
 
@@ -379,9 +361,9 @@ function! s:open_at_rev(prefix, path, rev, chunks, lineno)
                 let l:sign = 'review_c'
             endif
             execute('sign place ' . l:s . ' '
-                \ . 'line=' . l:j . ' '
-                \ . 'name=' . l:sign . ' '
-                \ . 'buffer=' . bufnr('$'))
+            \   . 'line=' . l:j . ' '
+            \   . 'name=' . l:sign . ' '
+            \   . 'buffer=' . bufnr('$'))
             let l:s = l:s + 1
             let l:j = l:j + 1
         endwhile
@@ -403,54 +385,27 @@ function! s:open_at_rev(prefix, path, rev, chunks, lineno)
 endfunction
 
 
-" Attempts to extract the a and b filenames from a git diff header.
-function! s:extract_header(s)
-    let l:m = matchlist(
-        \ a:s,
-        \ 'diff --git a/\([^\e]*\) b/\([^\e]*\)')
-    if !empty(l:m)
-        return [l:m[1], l:m[2]]
-    else
+" Attempts to match a regular expression agains a line.
+"
+" Only matched groups are returned, so if the regular expression does not
+" contain any groups, it is not possible to determine whether the expression
+" matched.
+function! s:match(lineno, regex_and_count)
+    let [l:regex, l:count] = a:regex_and_count
+    let l:m = matchlist(getline(a:lineno), l:regex)
+    if empty(l:m)
         return []
+    else
+        return l:m[1:l:count]
     endif
 endfunction
 
 
-" Attempts to extract the hunk start line from a hunk header.
-function! s:extract_hunk(s)
-    let l:m = matchlist(
-        \ a:s,
-        \ '@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@')
-    if !empty(l:m)
-        return [l:m[1], l:m[3]]
-    else
-        return []
-    endif
-endfunction
-
-
-" Attempts to extract the revisions from a git index line.
-function! s:extract_revisions(s)
-    let l:m = matchlist(
-        \ a:s,
-        \ 'index \([0-9a-h]*\)\.\.\([0-9a-h]*\)')
-    if !empty(l:m)
-        return [l:m[1], l:m[2]]
-    else
-        return []
-    endif
-endfunction
-
-
-" Attempts to extract line number information from a git hunk header.
-function! s:extract_line_numbers(s)
-    let l:m = matchlist(
-        \ a:s,
-        \ '@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@')
-    if !empty(l:m)
-        return [l:m[1], l:m[2], l:m[3], l:m[4]]
-    else
-        return []
+" Searches for the next match for a regular expression, and returns a match if
+" found.
+function! s:next_match(regex)
+    if search(a:regex[0], 'cW')
+        return s:match(line('.'), a:regex)
     endif
 endfunction
 
