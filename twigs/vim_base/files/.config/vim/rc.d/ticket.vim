@@ -23,12 +23,12 @@ function! TicketOpen()
     " Replace the keys in the URL format string
     let l:url = g:ticket_url_format
     for [l:k, l:v] in [
-            \ ['ticket', l:ticket],
-            \ ['project', l:project],
-            \ ['number', l:number]]
+    \   ['ticket', l:ticket],
+    \   ['project', l:project],
+    \   ['number', l:number]]
         let l:url = substitute(l:url, '${' . l:k . '}', l:v, '')
     endfor
 
-    call system('gio open "' . l:url . '" & >/dev/null')
+    call system('g "' . l:url . '" & >/dev/null')
     echo 'Opened ' . l:url
 endfunction

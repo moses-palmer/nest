@@ -41,8 +41,8 @@ set t_ut=
 
 " Detect whether the current terminal supports italics
 let g:term_has_italics = stridx(
-\    system('infocmp ' . $TERM . ' | grep sitm'),
-\    'sitm') > -1
+\   system('infocmp ' . $TERM . ' | grep sitm'),
+\   'sitm') > -1
 
 
 " Include library functions
@@ -88,19 +88,23 @@ noremap <leader>l <C-w>L
 nmap <leader>A qa
 nmap <leader>a @a
 
+" Reflow paragraph and selection
+vnoremap <C-a> gw
+noremap <C-a> gw
+
 " Toggle relative numbers with <leader>r
 nnoremap <leader>r :set relativenumber!<CR>
 
 
 " Let \q and \w close buffers, but not windows
 command! KillBufferMoveLeft
-    \ call lib#for_main_window('call lib#kill_current_buffer(-1)')
+\   call lib#for_main_window('call lib#kill_current_buffer(-1)')
 command! KillBufferMoveRight
-    \ call lib#for_main_window('call lib#kill_current_buffer(1)')
+\   call lib#for_main_window('call lib#kill_current_buffer(1)')
 command! KillLeft
-    \ call lib#for_main_window('call lib#kill_other_buffers(-1)')
+\   call lib#for_main_window('call lib#kill_other_buffers(-1)')
 command! KillRight
-    \ call lib#for_main_window('call lib#kill_other_buffers(1)')
+\   call lib#for_main_window('call lib#kill_other_buffers(1)')
 map <silent> <leader>q :KillBufferMoveLeft<CR>
 map <silent> <leader>Q :KillLeft<CR>
 map <silent> <leader>w :KillBufferMoveRight<CR>
