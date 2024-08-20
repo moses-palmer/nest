@@ -7,7 +7,7 @@ endif
 " modified.
 function! s:watch(path, command)
     execute('term ++shell ++rows=4 '
-        \ . 'while inotifywait --event delete_self ' . a:path . '; '
-        \ . 'do ' . a:command . ' ' . a:path . '; done')
+    \   . 'while inotifywait --event delete_self ' . a:path . '; '
+    \   . 'do ' . a:command . ' ' . a:path . '; done')
     wincmd p
 endfunction
