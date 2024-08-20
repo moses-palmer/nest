@@ -42,8 +42,8 @@ set t_ut=
 
 " Detect whether the current terminal supports italics
 let g:term_has_italics = stridx(
-\    system('infocmp ' . $TERM . ' | grep sitm'),
-\    'sitm') > -1
+\   system('infocmp ' . $TERM . ' | grep sitm'),
+\   'sitm') > -1
 
 
 " Include library functions
@@ -56,11 +56,7 @@ let &t_EI .= "\<Esc>[2 q"
 
 
 " Beautify fillchars
-if has('nvim')
-    let &fillchars = 'eob: ,stl:─,stlnc:─,horiz:─,vert:│'
-else
-    let &fillchars = 'eob: ,stl:─,stlnc:─,vert:│'
-endif
+let &fillchars = 'eob: ,stl:─,stlnc:─,vert:│'
 
 
 " Use tab as leader instead of backslash, and clear current search on double
@@ -89,19 +85,23 @@ noremap <leader>l <C-w>L
 nmap <leader>A qa
 nmap <leader>a @a
 
+" Reflow paragraph and selection
+vnoremap <C-a> gw
+noremap <C-a> gw
+
 " Toggle relative numbers with <leader>r
 nnoremap <leader>r :set relativenumber!<CR>
 
 
 " Let \q and \w close buffers, but not windows
 command! KillBufferMoveLeft
-    \ call lib#for_main_window('call lib#kill_current_buffer(-1)')
+\   call lib#for_main_window('call lib#kill_current_buffer(-1)')
 command! KillBufferMoveRight
-    \ call lib#for_main_window('call lib#kill_current_buffer(1)')
+\   call lib#for_main_window('call lib#kill_current_buffer(1)')
 command! KillLeft
-    \ call lib#for_main_window('call lib#kill_other_buffers(-1)')
+\   call lib#for_main_window('call lib#kill_other_buffers(-1)')
 command! KillRight
-    \ call lib#for_main_window('call lib#kill_other_buffers(1)')
+\   call lib#for_main_window('call lib#kill_other_buffers(1)')
 map <silent> <leader>q :KillBufferMoveLeft<CR>
 map <silent> <leader>Q :KillLeft<CR>
 map <silent> <leader>w :KillBufferMoveRight<CR>

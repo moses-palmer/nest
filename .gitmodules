@@ -1,27 +1,23 @@
 [submodule "twigs/vim/files/.vim/pack/color-themes/opt/onedark.vim"]
-	path = twigs/vim/files/.vim/pack/color-themes/opt/onedark.vim
+	path = twigs/vim_base/files/.vim/pack/color-themes/opt/onedark.vim
 	ignore = dirty
 	url = https://github.com/joshdick/onedark.vim
 [submodule "twigs/vim/files/.vim/pack/plugins/opt/vim-visual-multi"]
-	path = twigs/vim/files/.vim/pack/plugins/opt/vim-visual-multi
+	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-visual-multi
 	ignore = dirty
 	url = https://github.com/mg979/vim-visual-multi
 [submodule "twigs/vim/files/.vim/pack/plugins/opt/SimpylFold"]
-	path = twigs/vim/files/.vim/pack/plugins/opt/SimpylFold
+	path = twigs/vim_base/files/.vim/pack/plugins/opt/SimpylFold
 	ignore = dirty
 	url = https://github.com/tmhedberg/SimpylFold
 [submodule "twigs/vim/files/.vim/pack/plugins/opt/vim-buftabline"]
-	path = twigs/vim/files/.vim/pack/plugins/opt/vim-buftabline
+	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-buftabline
 	ignore = dirty
 	url = https://github.com/ap/vim-buftabline
 [submodule "twigs/vim/files/.vim/pack/plugins/opt/vim-sneak"]
-	path = twigs/vim/files/.vim/pack/plugins/opt/vim-sneak
+	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-sneak
 	ignore = dirty
 	url = https://github.com/justinmk/vim-sneak
-[submodule "twigs/vim_ansi_esc/files/.vim/pack/plugins/opt/AnsiEsc.vim"]
-	path = twigs/vim_ansi_esc/files/.vim/pack/plugins/opt/AnsiEsc.vim
-	ignore = dirty
-	url = https://github.com/vim-scripts/AnsiEsc.vim
 [submodule "twigs/vim_fileformats/files/.vim/pack/plugins/opt/ron.vim"]
 	path = twigs/vim_fileformats/files/.vim/pack/plugins/opt/ron.vim
 	ignore = dirty
