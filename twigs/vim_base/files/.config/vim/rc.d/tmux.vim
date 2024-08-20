@@ -39,11 +39,11 @@ function! s:navigate(dir)
     " characters
     if l:at_edge
         let l:args = 'select-pane -t '
-            \ . shellescape($TMUX_PANE) . ' -'
-            \ . tr(
-                \ a:dir,
-                \ 'hjkl',
-                \ 'LDUR')
+        \   . shellescape($TMUX_PANE) . ' -'
+        \   . tr(
+        \       a:dir,
+        \       'hjkl',
+        \       'LDUR')
         silent call s:tmux(l:args)
     endif
 endfunction
