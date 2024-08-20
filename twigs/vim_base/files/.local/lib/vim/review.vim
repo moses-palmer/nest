@@ -71,11 +71,11 @@ function! s:load_changes()
         let l:git_command = 'log --patch --color=always'
     endif
     silent! execute('0read !' .
-        \ 'git ' .
-        \ l:git_command . ' ' .
-        \ '--unified=1 ' .
-        \ '--reverse ' .
-        \ $REVIEW_TARGET . '..' . $REVIEW_SOURCE)
+    \   'git ' .
+    \   l:git_command . ' ' .
+    \   '--unified=1 ' .
+    \   '--reverse ' .
+    \   $REVIEW_TARGET . '..' . $REVIEW_SOURCE)
     AnsiEsc!
     setlocal nomodified
 
@@ -287,8 +287,8 @@ function! s:find_header(lineno)
 
             " If this is a new or deleted file, skip the line stating that
             if !empty(matchlist(
-                    \ getline(l:lineno + 1),
-                    \ '\(deleted\|new\) file mode [0-9]*'))
+            \   getline(l:lineno + 1),
+            \   '\(deleted\|new\) file mode [0-9]*'))
                 let l:lineno = l:lineno + 1
             endif
 
@@ -351,11 +351,11 @@ function! s:open_at_rev(prefix, path, rev, chunks, lineno)
     " Open the file at the specified revision
     let l:file = a:prefix . '/' . a:path
     setlocal bufhidden=wipe
-        \ buftype=nofile
-        \ modifiable
-        \ nobuflisted
-        \ nowrap
-        \ number
+    \   buftype=nofile
+    \   modifiable
+    \   nobuflisted
+    \   nowrap
+    \   number
     if match(a:rev, '^0\+$') == -1
         execute('0read !git show ' . a:rev . ' -- ' . a:path)
         execute('file ' . l:file)
@@ -379,9 +379,9 @@ function! s:open_at_rev(prefix, path, rev, chunks, lineno)
                 let l:sign = 'review_c'
             endif
             execute('sign place ' . l:s . ' '
-                \ . 'line=' . l:j . ' '
-                \ . 'name=' . l:sign . ' '
-                \ . 'buffer=' . bufnr('$'))
+            \   . 'line=' . l:j . ' '
+            \   . 'name=' . l:sign . ' '
+            \   . 'buffer=' . bufnr('$'))
             let l:s = l:s + 1
             let l:j = l:j + 1
         endwhile
@@ -406,8 +406,8 @@ endfunction
 " Attempts to extract the a and b filenames from a git diff header.
 function! s:extract_header(s)
     let l:m = matchlist(
-        \ a:s,
-        \ 'diff --git a/\([^\e]*\) b/\([^\e]*\)')
+    \   a:s,
+    \   'diff --git a/\([^\e]*\) b/\([^\e]*\)')
     if !empty(l:m)
         return [l:m[1], l:m[2]]
     else
@@ -419,8 +419,8 @@ endfunction
 " Attempts to extract the hunk start line from a hunk header.
 function! s:extract_hunk(s)
     let l:m = matchlist(
-        \ a:s,
-        \ '@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@')
+    \   a:s,
+    \   '@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@')
     if !empty(l:m)
         return [l:m[1], l:m[3]]
     else
@@ -432,8 +432,8 @@ endfunction
 " Attempts to extract the revisions from a git index line.
 function! s:extract_revisions(s)
     let l:m = matchlist(
-        \ a:s,
-        \ 'index \([0-9a-h]*\)\.\.\([0-9a-h]*\)')
+    \   a:s,
+    \   'index \([0-9a-h]*\)\.\.\([0-9a-h]*\)')
     if !empty(l:m)
         return [l:m[1], l:m[2]]
     else
@@ -445,8 +445,8 @@ endfunction
 " Attempts to extract line number information from a git hunk header.
 function! s:extract_line_numbers(s)
     let l:m = matchlist(
-        \ a:s,
-        \ '@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@')
+    \   a:s,
+    \   '@@ -\([0-9]*\),\([0-9]*\) +\([0-9]*\),\([0-9]*\) @@')
     if !empty(l:m)
         return [l:m[1], l:m[2], l:m[3], l:m[4]]
     else
