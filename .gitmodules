@@ -94,3 +94,6 @@
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/actions-preview.nvim
 	url = https://github.com/aznhe21/actions-preview.nvim
+[submodule "twigs/nvim_dap/files/.config/nvim/pack/nvim/start/nvim-dap"]
+	path = twigs/nvim_dap/files/.config/nvim/pack/nvim/start/nvim-dap
+	url = https://github.com/mfussenegger/nvim-dap
