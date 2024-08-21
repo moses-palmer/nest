@@ -9,7 +9,7 @@ endif
 
 let s:debug_plugin = expand(glob(
 \   '~/.local/lib/jdtls/plugins/com.microsoft.java.debug.plugin-*.jar'))
-if filereadable(s:debug_plugin)
+if filereadable(s:debug_plugin) && !has('nvim')
     " Make sure to launch the agent the first time we start debugging
     noremap <silent> <F5> :call <SID>debug()<CR>
 endif
