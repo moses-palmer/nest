@@ -1,7 +1,7 @@
 """Async language server protocol plugin for vim and neovim.
 """
 
-from .. import vim_fzf, vim
+from .. import vim
 
 
 main = vim.plugin()
