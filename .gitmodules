@@ -70,19 +70,19 @@
 	path = twigs/vim_wgsl/files/.vim/pack/plugins/opt/wgsl.vim
 	url = https://github.com/DingDean/wgsl.vim
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-lspconfig"]
-	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-lspconfig
+	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-lspconfig
 	url = https://github.com/neovim/nvim-lspconfig
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-cmp"]
-	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-cmp
+	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-cmp
 	url = https://github.com/hrsh7th/nvim-cmp
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/cmp-nvim-lsp"]
-	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/cmp-nvim-lsp
+	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/cmp-nvim-lsp
 	url = https://github.com/hrsh7th/cmp-nvim-lsp
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/cmp-vsnip"]
-	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/cmp-vsnip
+	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/cmp-vsnip
 	url = https://github.com/hrsh7th/cmp-vsnip
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/vim-vsnip"]
-	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/vim-vsnip
+	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/vim-vsnip
 	url = https://github.com/hrsh7th/vim-vsnip
 [submodule "twigs/vim_fzf/files/.config/nvim/pack/nvim/start/plenary.nvim"]
 	path = twigs/vim_fzf/files/.config/nvim/pack/nvim/start/plenary.nvim
@@ -92,5 +92,5 @@
 	url = https://github.com/nvim-telescope/telescope.nvim
 	branch = 0.1.x
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim"]
-	path = twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim
+	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/actions-preview.nvim
 	url = https://github.com/aznhe21/actions-preview.nvim
