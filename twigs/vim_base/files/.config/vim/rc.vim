@@ -109,13 +109,17 @@ autocmd BufWritePre * if index(whitespace_blacklist, &ft) < 0 | %s/\s\+$//e
 
 
 " Load all plugin configurations
+let s:loaded_plugins = []
 let s:vimscript_plugin_dir = expand('~/.config/vim/plugins/')
 let s:lua_plugin_dir = expand('~/.config/nvim/lua/')
 function! s:load_plugin(name)
-    if has('nvim') && filereadable(s:lua_plugin_dir . a:name . '/init.lua')
-        execute 'lua' 'require("' . a:name . '")'
-    elseif filereadable(s:vimscript_plugin_dir . a:name . '.vim')
-        execute 'source' s:vimscript_plugin_dir . a:name . '.vim'
+    if index(s:loaded_plugins, a:name) == -1
+        call add(s:loaded_plugins, a:name)
+        if has('nvim') && filereadable(s:lua_plugin_dir . a:name . '/init.lua')
+            execute 'lua' 'require("' . a:name . '")'
+        elseif filereadable(s:vimscript_plugin_dir . a:name . '.vim')
+            execute 'source' s:vimscript_plugin_dir . a:name . '.vim'
+        endif
     endif
 endfunction
 if exists('$VIM_PLUGINS')
@@ -127,6 +131,11 @@ else
     for s:file in sort(readdir(s:vimscript_plugin_dir, '1'))
         call s:load_plugin(join(split(s:file, '\.')[:-2], '.'))
     endfor
+    if has('nvim')
+        for s:directory in sort(readdir(s:lua_plugin_dir, '1'))
+            call s:load_plugin(s:directory)
+        endfor
+    endif
 endif
 
 
