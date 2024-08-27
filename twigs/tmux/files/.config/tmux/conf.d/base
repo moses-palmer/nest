@@ -38,6 +38,9 @@ set-option -g exit-empty off
 # Update status line every 5 seconds
 set-option -g status-interval 5
 
+# Enable focus events
+set-option -g focus-events on
+
 # Let the status format determine separators
 set-window-option -g window-status-separator ''
 set-option -wg window-status-format ' #I:#W⎹'
