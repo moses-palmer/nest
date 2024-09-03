@@ -11,6 +11,11 @@ require'telescope'.setup {
         find_files = {
             hidden = hidden,
         },
+        grep_string = {
+            additional_args = {
+                '--hidden',
+            }
+        },
         live_grep = {
             additional_args = {
                 '--hidden',
@@ -19,8 +24,16 @@ require'telescope'.setup {
     },
 }
 
+require'telescope'.load_extension('fzf')
+
 vim.keymap.set('n', '<C-p>', require'telescope.builtin'.find_files)
-vim.keymap.set('n', '<C-k>', require'telescope.builtin'.live_grep)
+vim.keymap.set('n', '<C-k>', function()
+    require'telescope.builtin'.grep_string {
+        search = '',
+        only_sort_text = false,
+    }
+end)
+vim.keymap.set('n', '<leader><C-k>', require'telescope.builtin'.live_grep)
 vim.keymap.set('n', '<leader><C-p>', function()
     local conf = require('telescope.config').values
     local finders = require 'telescope.finders'
