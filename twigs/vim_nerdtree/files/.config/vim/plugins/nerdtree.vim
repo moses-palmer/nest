@@ -2,21 +2,22 @@ packadd! nerdtree
 
 let g:NERDTreeBookmarksFile = '~/.config/NERDTreeBookmarks'
 let g:NERDTreeIgnore = [
-    \ '\.egg-info$',
-    \ '\.pyc$',
-    \ '^__pycache__$',
-    \ '\.rs.bk$'
-    \ ]
+\   '\.egg-info$',
+\   '\.pyc$',
+\   '^__pycache__$',
+\   '\.rs.bk$']
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeWinSize = 52
 
 augroup NERDTree
     autocmd StdinReadPre * let s:std_in=1
     autocmd VimEnter * if
-        \ argc() == 0
-        \ && !exists('s:std_in')
-        \ && winwidth(0) - g:NERDTreeWinSize > &l:textwidth
-        \ | NERDTree | execute 'wincmd l'| endif
+    \   argc() == 0
+    \       && !exists('s:std_in')
+    \       && (
+    \           winwidth(0) - g:NERDTreeWinSize > &l:textwidth
+    \           || exists('$NERDTREE_SHOW'))
+    \   | NERDTree | execute 'wincmd l'| endif
 augroup END
 
 augroup close_if_only_control_win_left
