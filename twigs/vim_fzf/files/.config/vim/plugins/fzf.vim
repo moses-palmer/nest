@@ -2,6 +2,16 @@ packadd! fzf
 packadd! fzf.vim
 
 
+if $TMUX_PROJECT_SHOW_HIDDEN == 'yes'
+    let $FZF_DEFAULT_COMMAND = $FZF_DEFAULT_COMMAND . ' --hidden'
+    let $FZF_SEARCH_COMMAND = $FZF_SEARCH_COMMAND . ' --hidden'
+endif
+if $TMUX_PROJECT_SHOW_VCS == 'yes'
+    let $FZF_DEFAULT_COMMAND = $FZF_DEFAULT_COMMAND . ' --no-ignore-vcs'
+    let $FZF_SEARCH_COMMAND = $FZF_SEARCH_COMMAND . ' --no-ignore-vcs'
+endif
+
+
 map <C-p> :call <SID>fzf_for_file_window()<CR>
 imap <C-p> <C-o>:call <SID>fzf_for_file_window()<CR>
 map <leader><C-p> :call <SID>fzf_for_file_window_git_dirty()<CR>
