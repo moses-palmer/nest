@@ -9,6 +9,16 @@ let g:NERDTreeIgnore = [
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeWinSize = 52
 
+if $TMUX_PROJECT_SHOW_HIDDEN == 'yes'
+    let g:NERDTreeShowHidden = 1
+endif
+if $TMUX_PROJECT_SHOW_VCS != 'yes'
+    call add(g:NERDTreeIgnore, '\.git$')
+    call add(g:NERDTreeIgnore, '\.hg$')
+    call add(g:NERDTreeIgnore, '\.svn$')
+endif
+
+
 augroup NERDTree
     autocmd StdinReadPre * let s:std_in=1
     autocmd VimEnter * if
