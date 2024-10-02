@@ -4,7 +4,7 @@ ICON="🪺"
 __NEST_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 alias nest="$__NEST_ROOT/nest"
 
-export FZF_DEFAULT_COMMAND="$FZF_DEFAULT_COMMAND --no-ignore --hidden"
-export FZF_SEARCH_COMMAND="$FZF_SEARCH_COMMAND --no-ignore --hidden"
+export TMUX_PROJECT_SHOW_HIDDEN=yes
+export TMUX_PROJECT_SHOW_VCS=yes
 
 alias asg='sg --lang=python --pattern'
