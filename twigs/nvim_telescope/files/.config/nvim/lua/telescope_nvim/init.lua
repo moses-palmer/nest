@@ -1,25 +1,32 @@
 vim.cmd('packadd! plenary.nvim')
 vim.cmd('packadd! telescope.nvim')
 
-local hidden = false
-if string.match(os.getenv('FZF_DEFAULT_COMMAND'), '[-][-]hidden') then
-    hidden = true
-end
+local show_hidden = os.getenv('TMUX_PROJECT_SHOW_HIDDEN') == 'yes'
+local show_vcs = os.getenv('TMUX_PROJECT_SHOW_VCS') == 'yes'
+local vimgrep_arguments = {
+    'rg',
+    '--color=never',
+    '--no-heading',
+    '--with-filename',
+    '--line-number',
+    '--column',
+    '--smart-case',
+    '--glob=!.git/*',
+    (show_hidden and {'--hidden'} or {'--no-hidden'})[1],
+    (show_vcs and {'--no-ignore-vcs'} or {'--ignore-vcs'})[1],
+}
 
 require'telescope'.setup {
+    defaults = {
+        vimgrep_arguments = vimgrep_arguments,
+        file_ignore_patterns = {
+            '.git/*',
+        },
+    },
     pickers = {
         find_files = {
-            hidden = hidden,
-        },
-        grep_string = {
-            additional_args = {
-                '--hidden',
-            }
-        },
-        live_grep = {
-            additional_args = {
-                '--hidden',
-            }
+            hidden = show_hidden,
+            no_ignore = show_vcs,
         },
     },
 }
