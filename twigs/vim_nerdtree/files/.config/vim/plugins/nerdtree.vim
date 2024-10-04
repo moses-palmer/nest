@@ -53,6 +53,9 @@ endfunction
 function! s:jump_to_current()
     execute('NERDTreeRefreshRoot')
     execute('NERDTreeFind')
+    if !(exists('t:NERDTreeBufName') && t:NERDTreeBufName == expand('%'))
+        execute('NERDTreeFocus')
+    endif
     execute('vertical resize ' . g:NERDTreeWinSize)
 endfunction
 
