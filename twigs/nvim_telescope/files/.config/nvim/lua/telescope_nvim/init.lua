@@ -32,27 +32,30 @@ require'telescope'.setup {
 }
 
 require'telescope'.load_extension('fzf')
+local telescope_builtin = require'telescope.builtin'
 
-vim.keymap.set('n', '<C-p>', require'telescope.builtin'.find_files)
+vim.keymap.set('n', '<F1>', telescope_builtin.help_tags)
+vim.keymap.set('n', '<C-p>', telescope_builtin.find_files)
 vim.keymap.set('n', '<C-k>', function()
-    require'telescope.builtin'.grep_string {
+    telescope_builtin.grep_string {
         search = '',
         only_sort_text = false,
     }
 end)
-vim.keymap.set('n', '<leader><C-k>', require'telescope.builtin'.live_grep)
+
+vim.keymap.set('n', '<leader><C-k>', telescope_builtin.live_grep)
 vim.keymap.set('n', '<leader><C-p>', function()
-    local conf = require('telescope.config').values
-    local finders = require 'telescope.finders'
-    local pickers = require 'telescope.pickers'
+    local config = require'telescope.config'.values
+    local finders = require'telescope.finders'
+    local pickers = require'telescope.pickers'
     pickers.new({}, {
         prompt_title = 'Modified files',
         finder = finders.new_oneshot_job(
             { 'git', 'diff', '--name-only' },
             opts
         ),
-        previewer = conf.file_previewer({}),
-        sorter = conf.file_sorter({}),
+        previewer = config.file_previewer({}),
+        sorter = config.file_sorter({}),
     })
     :find()
 end)
