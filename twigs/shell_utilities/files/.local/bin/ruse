@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import argparse
+import pwd
+import os
+import shlex
+import subprocess
+import sys
+
+from pathlib import Path
+from typing import Optional
+
+
+#: The default binary to use, if any.
+DEFAULT_BINARY = os.getenv('RUSE_HOST_BINARY')
+
+#: The command used to execute the final command.
+ENTER_COMMAND = os.getenv(
+    'RUSE_ENTER_COMMAND',
+    'sudo --user {user} nsenter --target {pid} --env')
+
+
+def main(user, binary, command):
+    uid = pwd.getpwnam(user).pw_uid
+    target = pid(uid, binary)
+    final_command = [
+        p.format(user=user, pid=target)
+        for p in shlex.split(ENTER_COMMAND)] + command
+    os.execlp(final_command[0], *final_command)
+
+
+def pid(uid: int, binary: str) -> Optional[int]:
+    proc = Path('/proc')
+    for p in proc.iterdir():
+        try:
+            pid = int(p.name)
+        except ValueError:
+            continue
+        try:
+            if p.stat().st_uid != uid:
+                continue
+            else:
+                with open(p / 'cmdline', encoding='utf-8') as f:
+                    commandline = f.read().split('\0')
+        except FileNotFoundError:
+            continue
+        if commandline and commandline[0].split(os.path.sep)[-1] == binary:
+            return pid
+
+    sys.stderr.write('Cannot locate "{1}" running as "{0}".\n'.format(
+        user, binary))
+    sys.exit(1)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Run an application as a user with a specific context.')
+
+    parser.add_argument(
+        '--binary',
+        help='the name of the running binary whose environment to copy '
+        '(default {})'.format(DEFAULT_BINARY),
+        default=DEFAULT_BINARY,
+        required=DEFAULT_BINARY is None)
+    parser.add_argument(
+        '--user',
+        help='the name of the user')
+    parser.add_argument(
+        'command',
+        help='the command to run',
+        nargs='+')
+
+    main(**vars(parser.parse_args()))
