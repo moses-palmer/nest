@@ -26,7 +26,7 @@ def main(args, path: Optional[str]):
 
     if path is not None and path.rsplit('.', 1)[-1] in PKCS12_EXTENSIONS:
         data_str = subprocess.check_output(
-            ['openssl', 'pkcs12', '-legacy', '-nokeys'],
+            ['openssl', 'pkcs12', '-nokeys'],
             input=data_bytes).decode('utf-8')
     else:
         try:
@@ -83,7 +83,7 @@ def stringify(certificate: bytes, encoding: str, *args) -> str:
     :return: a string version of the certificate
     """
     child = subprocess.Popen(
-        ['openssl', 'x509', '-legacy', '-noout', '-text', '-inform', encoding]
+        ['openssl', 'x509', '-noout', '-text', '-inform', encoding]
             + list(args),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE)
