@@ -4,6 +4,16 @@
 . ~/.local/lib/bash/tmux-project
 
 
+if [ "$1" = "--quit" ]; then
+    if tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
+        tmux kill-window
+    else
+        tmux display-message "This window does not contain any projects."
+    fi
+    exit
+fi
+
+
 if [ -d "$1" ]; then
     ROOT="$1"
 else
