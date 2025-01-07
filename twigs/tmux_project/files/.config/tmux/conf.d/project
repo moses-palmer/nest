@@ -2,3 +2,6 @@
 bind-key C-e run-shell \
     -b \
     '~/.local/bin/tmux-project "#{pane_current_path}" "#{window_id}" "#{pane_id}"'
+
+bind-key C-q run-shell \
+    '~/.local/bin/tmux-project --quit'
