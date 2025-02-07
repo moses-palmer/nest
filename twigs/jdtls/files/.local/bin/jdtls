@@ -11,7 +11,10 @@ from pathlib import Path
 
 
 #: The environment variable for the Java home directory.
-JAVA_HOME_ENV = 'JAVA_HOME'
+JAVA_HOME_ENVS = (
+    'JDTLS_JAVA_HOME',
+    'JAVA_HOME',
+)
 
 #: The name of the Java binary.
 JAVA_BIN = 'java'
@@ -83,9 +86,12 @@ def cache_dir(project: Path) -> Path:
 
 if __name__ == '__main__':
     def java_home():
-        if JAVA_HOME_ENV in os.environ:
-            return Path(os.environ[JAVA_HOME_ENV])
-        else:
+        try:
+            return Path(next(
+                os.environ[java_home]
+                for java_home in JAVA_HOME_ENVS
+                if java_home in os.environ))
+        except StopIteration:
             java_bin = shutil.which(JAVA_BIN)
             if java_bin is None:
                 print('$' + name + ' not set')
