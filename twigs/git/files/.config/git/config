@@ -47,8 +47,14 @@
 
 [apply]
     whitespace = fix
+[branch]
+    sort = -committerdate
 [commit]
     verbose = true
+[diff]
+    algorithm = histogram
+    colorMoved = plain
+    renames = true
 [credential]
     helper = cache
 [diff]
@@ -58,7 +64,7 @@
 [interactive]
     diffFilter = __git-diff-filter
 [merge]
-    conflictstyle = diff3
+    conflictstyle = zdiff3
 [pull]
     rebase = true
 [push]
@@ -70,6 +76,8 @@
 [rerere]
     enabled = true
     autoupdate = true
+[tag]
+    sort = version:refname
 
 [include]
     path = local
