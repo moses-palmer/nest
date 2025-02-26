@@ -25,16 +25,16 @@ vim.keymap.set('n', '<leader>K', widgets.hover)
 
 
 vim.fn.sign_define('DapBreakpoint', {
-    text='🔴', texthl='', linehl='', numhl='',
+    text='⬤', texthl='ErrorMsg', linehl='', numhl='',
 })
 vim.fn.sign_define('DapBreakpointCondition', {
-    text='🟡', texthl='', linehl='', numhl='',
+    text='⬤', texthl='WarningMsg', linehl='', numhl='',
 })
 vim.fn.sign_define('DapBreakpointRejected', {
-    text='⭕', texthl='', linehl='', numhl='',
+    text='◯', texthl='ErrorMsg', linehl='', numhl='',
 })
 vim.fn.sign_define('DapStopped', {
-    text='🔷', texthl='', linehl='', numhl='',
+    text='◆', texthl='Title', linehl='', numhl='',
 })
 
 
