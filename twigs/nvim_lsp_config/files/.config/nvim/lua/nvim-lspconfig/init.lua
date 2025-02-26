@@ -114,3 +114,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', '<M-Up>', vim.diagnostic.goto_prev, options)
     end
 })
+
+
+vim.diagnostic.config {
+    signs = {
+        text = {
+            [vim.diagnostic.severity.ERROR] = '■',
+            [vim.diagnostic.severity.WARN] = '■',
+            [vim.diagnostic.severity.INFO] = '■',
+        }
+    }
+}
