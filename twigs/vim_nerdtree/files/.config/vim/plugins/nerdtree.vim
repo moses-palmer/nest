@@ -7,7 +7,12 @@ let g:NERDTreeIgnore = [
 \   '^__pycache__$',
 \   '\.rs.bk$']
 let g:NERDTreeMinimalUI = 1
-let g:NERDTreeWinSize = 52
+
+if exists('g:filetree_size')
+    let g:NERDTreeWinSize = g:filetree_size
+else
+    let g:NERDTreeWinSize = 52
+endif
 
 if $TMUX_PROJECT_SHOW_HIDDEN == 'yes'
     let g:NERDTreeShowHidden = 1
@@ -26,7 +31,7 @@ augroup NERDTree
     \       && !exists('s:std_in')
     \       && (
     \           winwidth(0) - g:NERDTreeWinSize > &l:textwidth
-    \           || exists('$NERDTREE_SHOW'))
+    \           || exists('$FILETREE_SHOW'))
     \   | NERDTree | execute 'wincmd l'| endif
 augroup END
 
@@ -69,3 +74,19 @@ function! s:toggle_window_size()
         execute('vertical resize ' . g:NERDTreeWinSize)
     endif
 endfunction
+
+
+if exists('quickshell#open')
+    function! s:quickshell()
+        let node = g:NERDTreeFileNode.GetSelected()
+        call quickshell#open(fnameescape(node.path.str()))
+        call node.refresh()
+        call NERDTreeRender()
+    endfunction
+
+    call NERDTreeAddKeyMap({
+    \     'key': '<leader>s',
+    \     'callback': function('s:quickshell'),
+    \     'quickhelpText': 'open a quickshell',
+    \ })
+endif
