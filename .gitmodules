@@ -103,3 +103,12 @@
 [submodule "twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope-fzf-native.nvim"]
 	path = twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope-fzf-native.nvim
 	url = https://github.com/nvim-telescope/telescope-fzf-native.nvim
+[submodule "twigs/nvim_nui/files/.config/nvim/pack/nvim/start/nui.nvim"]
+	path = twigs/nvim_nui/files/.config/nvim/pack/nvim/start/nui.nvim
+	url = https://github.com/MunifTanjim/nui.nvim
+[submodule "twigs/nvim_neotree/files/.config/nvim/pack/nvim/start/neo-tree.nvim"]
+	path = twigs/nvim_neotree/files/.config/nvim/pack/nvim/start/neo-tree.nvim
+	url = https://github.com/nvim-neo-tree/neo-tree.nvim
+[submodule "twigs/nvim_web_devicons/files/.config/nvim/pack/nvim/start/nvim-web-devicons"]
+	path = twigs/nvim_web_devicons/files/.config/nvim/pack/nvim/start/nvim-web-devicons
+	url = https://github.com/nvim-tree/nvim-web-devicons
