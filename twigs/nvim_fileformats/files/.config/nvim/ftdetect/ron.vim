@@ -1,0 +1,1 @@
+../pack/nvim/start/ron.vim/ftdetect/ron.vim
