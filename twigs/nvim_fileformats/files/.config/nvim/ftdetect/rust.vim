@@ -1,0 +1,1 @@
+../pack/nvim/start/rust.vim/ftdetect/rust.vim
