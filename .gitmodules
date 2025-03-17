@@ -18,56 +18,24 @@
 	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-sneak
 	ignore = dirty
 	url = https://github.com/justinmk/vim-sneak
-[submodule "twigs/vim_fileformats/files/.vim/pack/plugins/opt/ron.vim"]
-	path = twigs/vim_fileformats/files/.vim/pack/plugins/opt/ron.vim
+[submodule "twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/ron.vim"]
+	path = twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/ron.vim
 	ignore = dirty
 	url = https://github.com/ron-rs/ron.vim
 [submodule "twigs/vim_fileformats/files/.vim/pack/plugins/opt/rust.vim"]
-	path = twigs/vim_fileformats/files/.vim/pack/plugins/opt/rust.vim
+	path = twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/rust.vim
 	ignore = dirty
 	url = https://github.com/rust-lang/rust.vim
-[submodule "twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf"]
-	path = twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf
-	ignore = dirty
-	url = https://github.com/junegunn/fzf
-[submodule "twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf.vim"]
-	path = twigs/vim_fzf/files/.vim/pack/plugins/opt/fzf.vim
-	ignore = dirty
-	url = https://github.com/junegunn/fzf.vim
 [submodule "twigs/vim_git/files/.vim/pack/plugins/opt/vim-fugitive"]
-	path = twigs/vim_git/files/.vim/pack/plugins/opt/vim-fugitive
+	path = twigs/nvim_git/files/.config/nvim/pack/nvim/start/vim-fugitive
 	ignore = dirty
 	url = https://github.com/tpope/vim-fugitive
 [submodule "twigs/vim_git/files/.vim/pack/plugins/opt/vim-gitgutter"]
-	path = twigs/vim_git/files/.vim/pack/plugins/opt/vim-gitgutter
+	path = twigs/nvim_git/files/.config/nvim/pack/nvim/start/vim-gitgutter
 	ignore = dirty
 	url = https://github.com/airblade/vim-gitgutter
-[submodule "twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree"]
-	path = twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree
-	ignore = dirty
-	url = https://github.com/scrooloose/nerdtree
-[submodule "twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree-git-plugin"]
-	path = twigs/vim_nerdtree/files/.vim/pack/plugins/opt/nerdtree-git-plugin
-	ignore = dirty
-	url = https://github.com/Xuyuanp/nerdtree-git-plugin
-[submodule "twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete.vim"]
-	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete.vim
-	ignore = dirty
-	url = https://github.com/prabirshrestha/asyncomplete.vim
-[submodule "twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete-lsp.vim"]
-	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/asyncomplete-lsp.vim
-	ignore = dirty
-	url = https://github.com/prabirshrestha/asyncomplete-lsp.vim
-[submodule "twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/vim-lsp"]
-	path = twigs/vim_vim_lsp/files/.vim/pack/plugins/opt/vim-lsp
-	ignore = dirty
-	url = https://github.com/prabirshrestha/vim-lsp
-[submodule "twigs/vim_vimspector/files/.vim/pack/plugins/opt/vimspector"]
-	path = twigs/vim_vimspector/files/.vim/pack/plugins/opt/vimspector
-	ignore = dirty
-	url = https://github.com/puremourning/vimspector
 [submodule "twigs/vim_wgsl/files/.vim/pack/plugins/opt/wgsl.vim"]
-	path = twigs/vim_wgsl/files/.vim/pack/plugins/opt/wgsl.vim
+	path = twigs/nvim_wgsl/files/.config/nvim/pack/nvim/start/wgsl.vim
 	url = https://github.com/DingDean/wgsl.vim
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-lspconfig"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-lspconfig
@@ -98,7 +66,7 @@
 	path = twigs/nvim_dap/files/.config/nvim/pack/nvim/start/nvim-dap
 	url = https://github.com/mfussenegger/nvim-dap
 [submodule "twigs/jdtls/files/.config/nvim/pack/nvim/start/nvim-jdtls"]
-	path = twigs/jdtls/files/.config/nvim/pack/nvim/start/nvim-jdtls
+	path = twigs/jdtls/files/.config/nvim/pack/nvim/start/jdtls
 	url = https://github.com/mfussenegger/nvim-jdtls
 [submodule "twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope-fzf-native.nvim"]
 	path = twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope-fzf-native.nvim

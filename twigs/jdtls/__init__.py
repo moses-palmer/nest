@@ -14,7 +14,7 @@ from typing import Optional
 from nest import directories, ui
 from nest.platforms import Version
 
-from .. import Twig, archive, ext, java, vim_vim_lsp, twig
+from .. import Twig, archive, ext, java, nvim_lsp_config, twig
 
 
 #: The format string used to generate the source URL.

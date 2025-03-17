@@ -1,0 +1,1 @@
+../pack/nvim/start/wgsl.vim/ftdetect/wgsl.vim
