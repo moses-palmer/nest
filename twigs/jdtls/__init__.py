@@ -12,7 +12,7 @@ from typing import Optional
 
 from nest import ui
 from nest.platforms import Version
-from .. import Twig, downloadable, java, twig, vim_vim_lsp
+from .. import Twig, downloadable, java, nvim_lsp_config, twig
 
 
 #: The format string used to generate the source URL.
