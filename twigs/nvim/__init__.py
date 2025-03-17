@@ -22,8 +22,7 @@ from .. import (
 )
 
 
-main = system.package() \
-    .provides('vim')
+main = system.package()
 
 
 @main.completer
