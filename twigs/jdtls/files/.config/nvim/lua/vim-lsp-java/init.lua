@@ -1,1 +1,0 @@
--- Disable this plugin for nvim
