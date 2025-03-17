@@ -12,8 +12,7 @@ from typing import List
 from .. import ROOT, TWIG_PATH, Twig, caller_context, git, system, twig
 
 
-main = system.package() \
-    .provides('vim')
+main = system.package()
 
 
 @main.completer
