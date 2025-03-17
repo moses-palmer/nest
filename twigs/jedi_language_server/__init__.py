@@ -1,7 +1,7 @@
 """Python language server.
 """
 
-from .. import pip, vim_vim_lsp
+from .. import pip, nvim_lsp_config
 
 
 main = pip.package()
