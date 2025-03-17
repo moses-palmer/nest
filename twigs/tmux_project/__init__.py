@@ -1,6 +1,6 @@
 """Project management for tmux.
 """
 
-from .. import Twig, tmux, vim
+from .. import Twig, tmux, nvim
 
 main = Twig.empty()
