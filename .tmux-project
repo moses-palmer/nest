@@ -1,5 +1,5 @@
 PROJECT="Nest"
-ICON="🪺"
+ICON=""
 
 __NEST_ROOT="$(git rev-parse --show-toplevel)"
 alias nest="$__NEST_ROOT/nest"
