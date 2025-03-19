@@ -3,7 +3,7 @@
 
 import re
 
-from .. import Twig, dbus_send, dconf, twig
+from .. import Twig, dbus_send, dconf, nerdfont, twig
 
 
 #: The path to custom key bindings.
