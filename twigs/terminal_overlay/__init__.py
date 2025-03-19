@@ -3,7 +3,7 @@
 
 import re
 
-from .. import Twig, dconf, dbus_send
+from .. import Twig, dconf, dbus_send, nerdfont
 
 
 main = dconf.keybindings(
