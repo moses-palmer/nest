@@ -52,13 +52,6 @@
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/vim-vsnip"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/vim-vsnip
 	url = https://github.com/hrsh7th/vim-vsnip
-[submodule "twigs/vim_fzf/files/.config/nvim/pack/nvim/start/plenary.nvim"]
-	path = twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/plenary.nvim
-	url = https://github.com/nvim-lua/plenary.nvim
-[submodule "twigs/vim_fzf/files/.config/nvim/pack/nvim/start/telescope.nvim"]
-	path = twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope.nvim
-	url = https://github.com/nvim-telescope/telescope.nvim
-	branch = 0.1.x
 [submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/actions-preview.nvim
 	url = https://github.com/aznhe21/actions-preview.nvim
@@ -68,9 +61,6 @@
 [submodule "twigs/jdtls/files/.config/nvim/pack/nvim/start/nvim-jdtls"]
 	path = twigs/jdtls/files/.config/nvim/pack/nvim/start/jdtls
 	url = https://github.com/mfussenegger/nvim-jdtls
-[submodule "twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope-fzf-native.nvim"]
-	path = twigs/nvim_telescope/files/.config/nvim/pack/nvim/start/telescope-fzf-native.nvim
-	url = https://github.com/nvim-telescope/telescope-fzf-native.nvim
 [submodule "twigs/nvim_nui/files/.config/nvim/pack/nvim/start/nui.nvim"]
 	path = twigs/nvim_nui/files/.config/nvim/pack/nvim/start/nui.nvim
 	url = https://github.com/MunifTanjim/nui.nvim
@@ -80,3 +70,9 @@
 [submodule "twigs/nvim_web_devicons/files/.config/nvim/pack/nvim/start/nvim-web-devicons"]
 	path = twigs/nvim_web_devicons/files/.config/nvim/pack/nvim/start/nvim-web-devicons
 	url = https://github.com/nvim-tree/nvim-web-devicons
+[submodule "twigs/nvim_snacks_nvim/files/.config/nvim/pack/nvim/start/snacks.nvim"]
+	path = twigs/nvim_snacks_nvim/files/.config/nvim/pack/nvim/start/snacks.nvim
+	url = https://github.com/folke/snacks.nvim
+[submodule "twigs/nvim_plenary_nvim/files/.config/nvim/pack/nvim/start/plenary.nvim"]
+	path = twigs/nvim_plenary_nvim/files/.config/nvim/pack/nvim/start/plenary.nvim
+	url = https://github.com/nvim-lua/plenary.nvim

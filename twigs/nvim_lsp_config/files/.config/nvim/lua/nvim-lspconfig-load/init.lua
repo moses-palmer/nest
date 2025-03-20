@@ -13,8 +13,8 @@ require'actions-preview'.setup {
     highlight_command = {
         require('actions-preview.highlight').delta(),
     },
-    backend = { 'telescope' },
-    telescope = {
+    backend = { 'snacks' },
+    snacks = {
         sorting_strategy = 'ascending',
         layout_strategy = 'vertical',
         layout_config = {
@@ -60,7 +60,7 @@ cmp.setup {
 vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(args)
         local actions_preview = require'actions-preview'
-        local telescope = require'telescope.builtin'
+        local snacks = require'snacks'
         local options = { buffer = args.buf }
 
         split_id = nil
@@ -80,7 +80,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', 'gA', vim.lsp.codelens.run, options)
         vim.keymap.set('n', 'rr', vim.lsp.buf.rename, options)
 
-        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, options)
+        vim.keymap.set('n', 'gd', snacks.picker.lsp_definitions, options)
         vim.keymap.set('n', 'gD', split(vim.lsp.buf.definition), options)
 
         -- Allow mouse navigation; make sure to press the left button to change
@@ -89,32 +89,22 @@ vim.api.nvim_create_autocmd('LspAttach', {
             'n', '<C-LeftMouse>',
             '<LeftMouse>:lua vim.lsp.buf.definition()<CR>', options)
 
-        vim.keymap.set( 'n', 'gi', telescope.lsp_implementations, options)
+        vim.keymap.set('n', 'gi', snacks.picker.lsp_implementations, options)
 
         vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, options)
         vim.keymap.set('n', 'gT', split(vim.lsp.buf.type_definition), options)
 
-        vim.keymap.set('n', 'gh', telescope.lsp_incoming_calls, options)
-        vim.keymap.set('n', 'gH', telescope.lsp_outgoing_calls, options)
-        vim.keymap.set('n', 'gr', telescope.lsp_references, options)
+        --vim.keymap.set('n', 'gh', telescope.lsp_incoming_calls, options)
+        --vim.keymap.set('n', 'gH', telescope.lsp_outgoing_calls, options)
+        vim.keymap.set('n', 'gr', snacks.picker.lsp_references, options)
 
-        vim.keymap.set('n', 'gs', telescope.lsp_document_symbols, options)
-        vim.keymap.set('n', 'gS', telescope.lsp_workspace_symbols, options)
+        vim.keymap.set('n', 'gs', snacks.picker.lsp_symbols, options)
+        vim.keymap.set('n', 'gS', snacks.picker.lsp_workspace_symbols, options)
 
         vim.keymap.set('n', 'K', vim.lsp.buf.hover, options)
 
-        vim.keymap.set('n', 'ge', function()
-            telescope.diagnostics {
-                bufnr = 0,
-                no_sign = true,
-            }
-        end, options)
-        vim.keymap.set('n', 'gE', function()
-            telescope.diagnostics {
-                bufnr = nil,
-                no_sign = true,
-            }
-        end, options)
+        vim.keymap.set('n', 'ge', snacks.picker.diagnostics_buffer, options)
+        vim.keymap.set('n', 'gE', snacks.picker.diagnostics, options)
         vim.keymap.set('n', '<M-K>', vim.diagnostic.open_float, options)
         vim.keymap.set('n', '<M-Down>', vim.diagnostic.goto_next, options)
         vim.keymap.set('n', '<M-Up>', vim.diagnostic.goto_prev, options)
