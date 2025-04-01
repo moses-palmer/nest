@@ -35,5 +35,5 @@ tmux-nested on
 
 # Connect to host
 printf '\033]2;%s\033\\' "ssh to $HOST"
-tmux rename-window "🖥 $HOST"
+tmux rename-window " $HOST"
 ssh -t "$HOST" tmux new-session -As main "$@"
