@@ -46,7 +46,7 @@ set-window-option -g window-status-separator ''
 set-option -wg window-status-format ' #I:#W⎹'
 set-option -wg window-status-current-format ' #I:#W⎹'
 set-option -g status-left ''
-set-option -g status-right '⎸🖥 #H %H:%M'
+set-option -g status-right '⎸ #H %H:%M'
 
 # Apply the non-nested style
 run-shell  'tmux-nested off'
