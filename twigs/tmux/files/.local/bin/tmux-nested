@@ -17,10 +17,10 @@ case "$1" in
         : -u key-table
         : -g status-position top
         : -g status-style bg=green,fg=black
-        : -g status-left-style fg=black,bold,underscore
-        : -g status-right-style fg=black,bold,underscore
-        : -wg window-status-current-style fg=black,bold,underscore,bg=colour49
-        : -wg window-status-style fg=black,bold,underscore
+        : -g status-left-style fg=black,bold
+        : -g status-right-style fg=black,bold
+        : -wg window-status-current-style fg=black,bold,bg=colour49
+        : -wg window-status-style fg=black,bold
         ;;
 esac
 
