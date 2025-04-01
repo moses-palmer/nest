@@ -34,5 +34,5 @@ tmux-nested on
 
 
 # Connect to host
-tmux rename-window "🖥 $HOST"
+tmux rename-window " $HOST"
 ssh -t "$HOST" tmux new-session -As main "$@"
