@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import sys
+
+from typing import Generator, Optional, Union
+from xml.dom.minidom import parseString as parse
+
+
+def main(path: Optional[str]):
+    if path is not None:
+        with open(path, 'rb') as f:
+            data_bytes = f.read()
+    else:
+        data_bytes = sys.stdin.buffer.read()
+
+    doc = parse(data_bytes)
+    print(doc.toprettyxml(indent='    '))
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Pretty-prints an XML file')
+
+    parser.add_argument(
+        '-path',
+        help='The path to the XML file. If not passed, STDIN is used.')
+
+    try:
+        main(**vars(parser.parse_args()))
+    except KeyboardInterrupt:
+        print()
+        print('Cancelled')
