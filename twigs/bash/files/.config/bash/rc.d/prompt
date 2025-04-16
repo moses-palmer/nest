@@ -2,6 +2,9 @@ PROMPT_COMMAND=__prompt_command
 __prompt_command() {
     local code="$?"
 
+    history -a
+    history -c
+    history -r
     if [ "$code" = "0" ]; then
         PS1="\e[37m\t → \e[32m$code\e[0;m\n$PS1_PREFIX$__PS1$PS1_SUFFIX"
     else
