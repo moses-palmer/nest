@@ -5,7 +5,10 @@ if [ -n "$TMUX" ] && [ -z "$PROJECT_BASH_RC" ]; then
     PROJECT_BASH_RC="$(tmux show-window-option \
         -v "$TMUX_PROJECT_FILE_VAR" 2>/dev/null)"
 fi
-[ -n "$PROJECT_BASH_RC" ] && [ -f "$PROJECT_BASH_RC" ] && . "$PROJECT_BASH_RC"
+[ -n "$PROJECT_BASH_RC" ] && [ -f "$PROJECT_BASH_RC" ] \
+    && . "$PROJECT_BASH_RC" \
+    && export HISTFILE="$(tmux show-window-option \
+        -v "$TMUX_PROJECT_HISTFILE_VAR" 2>/dev/null)"
 
 # This is the shell stage
 TMUX_PROJECT_STAGE="shell"
