@@ -58,6 +58,8 @@ WIDTH="${WIDTH:-60%}"
 ##
 # A project local bash history file.
 PROJECT_BASH_HISTFILE="$HOME/.cache/bash/history/$PROJECT"
+tmux set-window-option \
+    "$TMUX_PROJECT_HISTFILE_VAR" "$PROJECT_BASH_HISTFILE"
 
 set -eu
 
