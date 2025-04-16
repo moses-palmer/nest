@@ -16,3 +16,8 @@ TMUX_PROJECT_SHELL_VAR="@__project_shell"
 # The name of the tmux window option used to set the path to the project
 # specific bash resource file.
 TMUX_PROJECT_FILE_VAR="@__project_file"
+
+##
+# The name of the tmux window option used to set the path to the bash history
+# file.
+TMUX_PROJECT_HISTFILE_VAR="@__project_histfile"
