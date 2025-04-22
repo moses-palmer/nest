@@ -1,3 +1,4 @@
 #!/bin/sh
 
+VIM_PLUGINS=onedark \
 nvim "$@"
