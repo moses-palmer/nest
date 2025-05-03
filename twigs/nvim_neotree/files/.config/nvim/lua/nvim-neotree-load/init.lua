@@ -52,6 +52,10 @@ require'neo-tree'.setup {
             hide_by_pattern = {
                 '*.pyc',
             },
+            always_show = {
+                '.tmux-project',
+                '.vimrc',
+            },
         },
         use_libuv_file_watcher = true,
     },
