@@ -49,7 +49,7 @@ PROJECT="${PROJECT:-$(basename "$ROOT")}"
 
 ##
 # The icon displayed for the window.
-ICON="${ICON:-📂}"
+ICON="${ICON:-}"
 
 ##
 # The width of the editor pane.
