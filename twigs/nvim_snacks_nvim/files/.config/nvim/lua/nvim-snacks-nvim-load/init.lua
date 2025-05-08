@@ -3,9 +3,22 @@ vim.cmd('packadd! snacks.nvim')
 local show_hidden = os.getenv('TMUX_PROJECT_SHOW_HIDDEN') == 'yes'
 local show_vcs = os.getenv('TMUX_PROJECT_SHOW_VCS') == 'yes'
 
-require'snacks'.setup {}
 
 local snacks = require'snacks'
+snacks.setup {}
+
+
+-- The default value does not provide enough contrast
+vim.api.nvim_create_autocmd({'ColorScheme', 'VimEnter'}, {
+    pattern = '*',
+    group = vim.api.nvim_create_augroup('SnacksColor', {}),
+    callback = function ()
+        vim.api.nvim_set_hl(0, 'SnacksPickerListCursorLine', {
+            bg = '#408040',
+        })
+    end
+})
+
 
 vim.keymap.set('n', '<F1>', snacks.picker.help)
 
