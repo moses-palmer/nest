@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+## Clears the current pane and its history.
+
+. ~/.local/lib/bash/autohelp
+
+reset
+tmux clear-history
