@@ -2,6 +2,7 @@ vim.cmd('packadd! vim-fugitive')
 vim.cmd('packadd! vim-gitgutter')
 
 vim.api.nvim_create_user_command('Blame', 'Git blame %', {})
+vim.api.nvim_create_user_command('Diff', 'Git diff %', {})
 vim.api.nvim_create_user_command('Log', 'Git log --patch --decorate %', {})
 vim.keymap.set('n', 'hk', '<Plug>(GitGutterPrevHunk)')
 vim.keymap.set('n', 'hj', '<Plug>(GitGutterNextHunk)')
