@@ -22,6 +22,8 @@ vim.api.nvim_create_autocmd({'ColorScheme', 'VimEnter'}, {
 
 vim.keymap.set('n', '<F1>', snacks.picker.help)
 
+vim.keymap.set('n', '<C-g>', snacks.picker.buffers)
+
 vim.keymap.set('n', '<C-p>', function(opts, ctx)
     local opts = opts ~= nil and opts or {}
 	opts.hidden = show_hidden
