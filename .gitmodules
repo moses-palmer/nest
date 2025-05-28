@@ -1,64 +1,55 @@
-[submodule "twigs/vim/files/.vim/pack/color-themes/opt/onedark.vim"]
+[submodule "twigs/vim_base/files/.vim/pack/color-themes/opt/onedark.vim"]
 	path = twigs/vim_base/files/.vim/pack/color-themes/opt/onedark.vim
-	ignore = dirty
 	url = https://github.com/joshdick/onedark.vim
-[submodule "twigs/vim/files/.vim/pack/plugins/opt/vim-visual-multi"]
+[submodule "twigs/vim_base/files/.vim/pack/plugins/opt/vim-visual-multi"]
 	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-visual-multi
-	ignore = dirty
 	url = https://github.com/mg979/vim-visual-multi
-[submodule "twigs/vim/files/.vim/pack/plugins/opt/SimpylFold"]
+[submodule "twigs/vim_base/files/.vim/pack/plugins/opt/SimpylFold"]
 	path = twigs/vim_base/files/.vim/pack/plugins/opt/SimpylFold
-	ignore = dirty
 	url = https://github.com/tmhedberg/SimpylFold
-[submodule "twigs/vim/files/.vim/pack/plugins/opt/vim-buftabline"]
+[submodule "twigs/vim_base/files/.vim/pack/plugins/opt/vim-buftabline"]
 	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-buftabline
-	ignore = dirty
 	url = https://github.com/ap/vim-buftabline
-[submodule "twigs/vim/files/.vim/pack/plugins/opt/vim-sneak"]
+[submodule "twigs/vim_base/files/.vim/pack/plugins/opt/vim-sneak"]
 	path = twigs/vim_base/files/.vim/pack/plugins/opt/vim-sneak
-	ignore = dirty
 	url = https://github.com/justinmk/vim-sneak
 [submodule "twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/ron.vim"]
 	path = twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/ron.vim
-	ignore = dirty
 	url = https://github.com/ron-rs/ron.vim
-[submodule "twigs/vim_fileformats/files/.vim/pack/plugins/opt/rust.vim"]
+[submodule "twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/rust.vim"]
 	path = twigs/nvim_fileformats/files/.config/nvim/pack/nvim/start/rust.vim
-	ignore = dirty
 	url = https://github.com/rust-lang/rust.vim
-[submodule "twigs/vim_git/files/.vim/pack/plugins/opt/vim-fugitive"]
+[submodule "twigs/nvim_git/files/.config/nvim/pack/nvim/start/vim-fugitive"]
 	path = twigs/nvim_git/files/.config/nvim/pack/nvim/start/vim-fugitive
-	ignore = dirty
 	url = https://github.com/tpope/vim-fugitive
-[submodule "twigs/vim_git/files/.vim/pack/plugins/opt/vim-gitgutter"]
+[submodule "twigs/nvim_git/files/.config/nvim/pack/nvim/start/vim-gitgutter"]
 	path = twigs/nvim_git/files/.config/nvim/pack/nvim/start/vim-gitgutter
-	ignore = dirty
 	url = https://github.com/airblade/vim-gitgutter
-[submodule "twigs/vim_wgsl/files/.vim/pack/plugins/opt/wgsl.vim"]
+[submodule "twigs/nvim_wgsl/files/.config/nvim/pack/nvim/start/wgsl.vim"]
 	path = twigs/nvim_wgsl/files/.config/nvim/pack/nvim/start/wgsl.vim
 	url = https://github.com/DingDean/wgsl.vim
-[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-lspconfig"]
+[submodule "twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-lspconfig"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-lspconfig
 	url = https://github.com/neovim/nvim-lspconfig
-[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/nvim-cmp"]
+[submodule "twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-cmp"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/nvim-cmp
 	url = https://github.com/hrsh7th/nvim-cmp
-[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/cmp-nvim-lsp"]
+[submodule "twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/cmp-nvim-lsp"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/cmp-nvim-lsp
 	url = https://github.com/hrsh7th/cmp-nvim-lsp
-[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/cmp-vsnip"]
+[submodule "twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/cmp-vsnip"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/cmp-vsnip
 	url = https://github.com/hrsh7th/cmp-vsnip
-[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/vim-vsnip"]
+[submodule "twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/vim-vsnip"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/vim-vsnip
 	url = https://github.com/hrsh7th/vim-vsnip
-[submodule "twigs/vim_vim_lsp/files/.config/nvim/pack/nvim/start/actions-preview.nvim"]
+[submodule "twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/actions-preview.nvim"]
 	path = twigs/nvim_lsp_config/files/.config/nvim/pack/nvim/start/actions-preview.nvim
 	url = https://github.com/aznhe21/actions-preview.nvim
 [submodule "twigs/nvim_dap/files/.config/nvim/pack/nvim/start/nvim-dap"]
 	path = twigs/nvim_dap/files/.config/nvim/pack/nvim/start/nvim-dap
 	url = https://github.com/mfussenegger/nvim-dap
-[submodule "twigs/jdtls/files/.config/nvim/pack/nvim/start/nvim-jdtls"]
+[submodule "twigs/jdtls/files/.config/nvim/pack/nvim/start/jdtls"]
 	path = twigs/jdtls/files/.config/nvim/pack/nvim/start/jdtls
 	url = https://github.com/mfussenegger/nvim-jdtls
 [submodule "twigs/nvim_nui/files/.config/nvim/pack/nvim/start/nui.nvim"]
