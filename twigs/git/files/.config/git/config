@@ -59,6 +59,7 @@
     helper = cache
 [diff]
     colorMoved = default
+    ignoreSubmodules = dirty
 [init]
    templatedir = ~/.config/git/templates
 [interactive]
