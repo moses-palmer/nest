@@ -54,6 +54,7 @@
 [diff]
     algorithm = histogram
     colorMoved = dimmed-zebra
+    ignoreSubmodules = dirty
     renames = true
 [credential]
     helper = cache
