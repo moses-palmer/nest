@@ -14,6 +14,7 @@ set expandtab
 set hidden
 set hlsearch
 set incsearch
+set laststatus=3
 set listchars=extends:>,precedes:<
 set mouse=a
 set nocompatible
