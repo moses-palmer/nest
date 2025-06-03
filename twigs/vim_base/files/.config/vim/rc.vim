@@ -14,6 +14,7 @@ set expandtab
 set hidden
 set hlsearch
 set incsearch
+set laststatus=3
 set listchars=extends:>,precedes:<
 set mouse=a
 set nocompatible
@@ -116,6 +117,16 @@ let whitespace_blacklist = ['diff']
 autocmd BufWritePre * if index(whitespace_blacklist, &ft) < 0 | %s/\s\+$//e
 
 
+" Include library functions
+source ~/.config/vim/lib.vim
+
+
+" Allow local overrides
+if filereadable(expand('~/.config/vim/local.vim'))
+    source ~/.config/vim/local.vim
+endif
+
+
 " Load all plugin configurations
 let s:loaded_plugins = []
 let s:vimscript_plugin_dir = expand('~/.config/vim/plugins/')
@@ -152,12 +163,6 @@ let s:rc_dir = expand('~/.config/vim/rc.d/')
 for f in sort(readdir(s:rc_dir, '1'))
     exe 'source' s:rc_dir . f
 endfor
-
-
-" Allow local overrides
-if filereadable(expand('~/.config/vim/local.vim'))
-    exe 'source' '~/.config/vim/local.vim'
-endif
 
 
 " Load theme
