@@ -63,12 +63,7 @@ require'neo-tree'.setup {
 
 vim.keymap.set({'i', 'n'}, '<C-t>', '<Cmd>Neotree toggle<CR>')
 vim.keymap.set({'i', 'n'}, '<C-h>', function()
-    local filename = vim.api.nvim_buf_get_name(0)
-    if vim.uv.fs_stat(filename) then
-        vim.fn.execute('Neotree reveal_file=' .. filename)
-    else
-        vim.fn.execute('Neotree reveal')
-    end
+    vim.fn.execute('Neotree reveal')
     vim.api.nvim_win_set_width(0, vim.g.filetree_size)
 end)
 
@@ -84,7 +79,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
         if show_filetree or (
                 filetree_fits and not std_in and not files_passed) then
-            vim.fn.execute('Neotree show')
+            vim.fn.execute('Neotree reveal')
         end
     end,
 })
