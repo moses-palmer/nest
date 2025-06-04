@@ -50,7 +50,10 @@ endfunction
 " 'quickfix'.
 function! lib#is_editor_window(winnr)
     let l:buftype = getwinvar(a:winnr, '&buftype')
-    return !(l:buftype == 'quickfix' || l:buftype == 'help')
+    return !(v:false
+    \   || l:buftype == 'quickfix'
+    \   || l:buftype == 'help'
+    \   || l:buftype == 'nofile')
 endfunction
 
 
