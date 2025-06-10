@@ -1,4 +1,4 @@
-require'lspconfig'.rust_analyzer.setup {
+vim.lsp.config('rust_analyzer', {
     capabilities = require'cmp_nvim_lsp'.default_capabilities()
-}
-vim.cmd('autocmd BufWritePre *.rs lua vim.lsp.buf.format()')
+})
+vim.lsp.enable('rust_analyzer')
