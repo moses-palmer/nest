@@ -43,8 +43,8 @@ set-option -g focus-events on
 
 # Let the status format determine separators
 set-window-option -g window-status-separator ''
-set-option -wg window-status-format ' #I:#W⎹'
-set-option -wg window-status-current-format ' #I:#W⎹'
+set-option -wg window-status-format ' #W⎹'
+set-option -wg window-status-current-format ' #W⎹'
 set-option -g status-left ''
 set-option -g status-right '⎸ #H %H:%M'
 
