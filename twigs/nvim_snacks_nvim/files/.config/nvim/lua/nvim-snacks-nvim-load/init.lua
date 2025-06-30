@@ -5,7 +5,13 @@ local show_vcs = os.getenv('TMUX_PROJECT_SHOW_VCS') == 'yes'
 
 
 local snacks = require'snacks'
-snacks.setup {}
+snacks.setup {
+    zen = {
+        win = {
+            width = 0,
+        },
+    },
+}
 
 
 -- The default value does not provide enough contrast
@@ -61,3 +67,5 @@ vim.keymap.set('n', '<leader><C-p>', function(opts, ctx)
         title = 'Modified files',
     }
 end)
+
+vim.keymap.set('n', '<leader>z', require'snacks.zen'.zen)
