@@ -5,7 +5,6 @@ local show_vcs = os.getenv('TMUX_PROJECT_SHOW_VCS') == 'yes'
 
 
 local snacks = require'snacks'
-snacks.setup {}
 
 
 -- The default value does not provide enough contrast
@@ -54,5 +53,18 @@ vim.keymap.set('n', '<leader><C-p>', function(opts, ctx)
     snacks.picker {
         items = items,
         title = 'Modified files',
+    }
+end)
+
+vim.keymap.set('n', '<leader>z', function()
+    local zen = require'snacks.zen'
+    local visible = zen.win and zen.win:valid()
+    if visible ~= vim.fn['tmux#zoomed']() then
+        vim.fn['tmux#toggle_zoomed']()
+    end
+    zen {
+        win = {
+            width = vim.o.textwidth + 8,
+        },
     }
 end)
