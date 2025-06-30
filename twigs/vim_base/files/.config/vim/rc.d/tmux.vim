@@ -24,6 +24,18 @@ command! -range TmuxCopyText call <SID>tmux_copy_text()
 command! -nargs=1 TmuxCopyPath call <SID>tmux_copy_path(<args>)
 
 
+" Determines whether the current tmux pane is zoomed.
+function! tmux#zoomed()
+    return s:tmux('display-message -p "#{window_zoomed_flag}"') == '1'
+endfunction
+
+
+" Toggles the current zoomed state.
+function! tmux#toggle_zoomed()
+    return s:tmux('resize-pane -Z') == '1'
+endfunction
+
+
 " Performs a tmux aware window navigation.
 "
 " If the movement is out from an edge window, the navigation is passed onto
