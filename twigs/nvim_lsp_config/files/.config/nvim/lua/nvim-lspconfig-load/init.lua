@@ -57,6 +57,7 @@ cmp.setup {
 }
 
 
+local open_floating_preview = vim.lsp.util.open_floating_preview
 vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(args)
         local actions_preview = require'actions-preview'
@@ -72,6 +73,29 @@ vim.api.nvim_create_autocmd('LspAttach', {
                 split_id = vim.api.nvim_open_win(0, true, {
                     split = 'right',
                 })
+                callback(...)
+            end
+        end
+        local no_float = function(callback)
+            return function(...)
+                vim.lsp.util.open_floating_preview = function(c, s, opts)
+                    local buf = vim.api.nvim_create_buf(false, true)
+                    vim.api.nvim_set_current_buf(buf)
+                    vim.api.nvim_buf_set_lines(buf, 0, -1, false, c)
+                    vim.opt.filetype = s
+                    vim.opt_local.bufhidden = 'wipe'
+                    vim.opt_local.conceallevel = 3
+                    vim.opt_local.concealcursor = 'nvic'
+                    vim.opt_local.modifiable = false
+                    vim.keymap.set('n', '<esc>',
+                        function()
+                            vim.api.nvim_win_close(0, true)
+                        end, {
+                        buffer = true,
+                    })
+
+                    vim.lsp.util.open_floating_preview = open_floating_preview
+                end
                 callback(...)
             end
         end
@@ -102,6 +126,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', 'gS', snacks.picker.lsp_workspace_symbols, options)
 
         vim.keymap.set('n', 'K', vim.lsp.buf.hover, options)
+        vim.keymap.set('n', 'gK', split(no_float(vim.lsp.buf.hover)), options)
 
         vim.keymap.set('n', 'ge', snacks.picker.diagnostics_buffer, options)
         vim.keymap.set('n', 'gE', snacks.picker.diagnostics, options)
