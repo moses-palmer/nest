@@ -46,10 +46,6 @@ let g:term_has_italics = stridx(
 \   'sitm') > -1
 
 
-" Include library functions
-exe 'source' '~/.config/vim/lib.vim'
-
-
 " Match the readline configuration
 let &t_SI .= "\<Esc>[6 q"
 let &t_EI .= "\<Esc>[2 q"
@@ -95,21 +91,6 @@ noremap <C-a> gw
 
 " Toggle relative numbers with <leader>r
 nnoremap <leader>r :set relativenumber!<CR>
-
-
-" Let \q and \w close buffers, but not windows
-command! KillBufferMoveLeft
-\   call lib#for_main_window('call lib#kill_current_buffer(-1)')
-command! KillBufferMoveRight
-\   call lib#for_main_window('call lib#kill_current_buffer(1)')
-command! KillLeft
-\   call lib#for_main_window('call lib#kill_other_buffers(-1)')
-command! KillRight
-\   call lib#for_main_window('call lib#kill_other_buffers(1)')
-map <silent> <leader>q :KillBufferMoveLeft<CR>
-map <silent> <leader>Q :KillLeft<CR>
-map <silent> <leader>w :KillBufferMoveRight<CR>
-map <silent> <leader>W :KillRight<CR>
 
 
 " Strip trailing whitespace
