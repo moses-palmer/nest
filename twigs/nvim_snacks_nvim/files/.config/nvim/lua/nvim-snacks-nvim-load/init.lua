@@ -19,6 +19,8 @@ vim.api.nvim_create_autocmd({'ColorScheme', 'VimEnter'}, {
 })
 
 
+vim.keymap.set('n', 'z=', snacks.picker.spelling)
+
 vim.keymap.set('n', '<F1>', snacks.picker.help)
 
 vim.keymap.set('n', '<C-g>', snacks.picker.buffers)
