@@ -29,6 +29,7 @@ set signcolumn=yes
 set smartcase
 set smartindent
 set smarttab
+set spelllang=en
 set splitbelow
 set tabstop=4
 set textwidth=79
@@ -39,6 +40,15 @@ set wildmenu
 
 " Ensure the background is correctly handled in tmux
 set t_ut=
+
+
+" Use tab as leader instead of backslash, and clear current search on double
+" leader; clear the search now as well, since set hlsearch above will
+" re-highlight matches when this file is reloaded
+let mapleader="\<tab>"
+map <silent> <leader><leader> :nohlsearch<CR>
+nohlsearch
+
 
 " Detect whether the current terminal supports italics
 let g:term_has_italics = stridx(
@@ -57,40 +67,6 @@ if has('nvim')
 else
     let &fillchars = 'eob: ,stl:─,stlnc:─,vert:│'
 endif
-
-
-" Use tab as leader instead of backslash, and clear current search on double
-" leader; clear the search now as well, since set hlsearch above will
-" re-highlight matches when this file is reloaded
-let mapleader="\<tab>"
-map <silent> <leader><leader> :nohlsearch<CR>
-nohlsearch
-
-
-" Scroll using arrow keys
-map <S-Down> <C-E>
-imap <S-Down> <C-O><C-E>
-map <S-Up> <C-Y>
-imap <S-Up> <C-O><C-Y>
-
-
-" Send current window to sides
-noremap <leader>h <C-w>H
-noremap <leader>j <C-w>J
-noremap <leader>k <C-w>K
-noremap <leader>l <C-w>L
-
-
-" Quickly run @a
-nmap <leader>A qa
-nmap <leader>a @a
-
-" Reflow paragraph and selection
-vnoremap <C-a> gw
-noremap <C-a> gw
-
-" Toggle relative numbers with <leader>r
-nnoremap <leader>r :set relativenumber!<CR>
 
 
 " Strip trailing whitespace
@@ -162,3 +138,32 @@ try
 catch /^Vim\%((\a\+)\)\=:E185/
     " Ignore
 endtry
+
+
+" Scroll using arrow keys
+map <S-Down> <C-E>
+imap <S-Down> <C-O><C-E>
+map <S-Up> <C-Y>
+imap <S-Up> <C-O><C-Y>
+
+
+" Send current window to sides
+noremap <leader>h <C-w>H
+noremap <leader>j <C-w>J
+noremap <leader>k <C-w>K
+noremap <leader>l <C-w>L
+
+
+" Quickly run @a
+nnoremap <leader>A qa
+nnoremap <leader>a @a
+
+" Reflow paragraph and selection
+vnoremap <C-a> gw
+noremap <C-a> gw
+
+" Toggle relative numbers with <leader>r
+nnoremap <leader>r :set relativenumber!<CR>
+
+" Toggle spellcheck for the current buffer
+nnoremap <leader>s :setlocal spell!<CR>
