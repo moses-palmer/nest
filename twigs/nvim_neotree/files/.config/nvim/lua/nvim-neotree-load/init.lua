@@ -37,6 +37,7 @@ require'neo-tree'.setup {
         mappings = {
             ['<leader>s'] = 'quickshell',
             ['gx'] = 'system_open',
+            ['Z'] = 'expand_all_subnodes',
         },
     },
     nesting_rules = {},
