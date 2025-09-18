@@ -43,7 +43,8 @@ elif [ "$1" = "--changes" ]; then
         if [ "$current" = "$next" ]; then
             echo "No changes."
         else
-            /bin/echo -e "Showing upstream changes to \033[1m$2\033[0m."
+            printf "Showing upstream changes to \033[1m%s\033[0m.\n" \
+                "$2"
             git diff "$current".."$next"
         fi
         exit 0
@@ -74,14 +75,16 @@ fi
 
 # Check out the branch to review
 if ! git checkout --quiet "$REVIEW_SOURCE"; then
-    /bin/echo -e "\033[1m$REVIEW_SOURCE\033[0m not found locally, fetching..."
+    printf "\033[1m%s\033[0m not found locally, fetching...\n" \
+        "$REVIEW_SOURCE"
     git fetch
     git checkout --quiet "$REVIEW_SOURCE"
 fi
 
 # Show an ordered commit log with diffs
-/bin/echo -e "Reviewing \033[1m$REVIEW_SOURCE\033[0m" \
-    "for merging into \033[1m$REVIEW_TARGET\033[0m."
+printf "Reviewing \033[1m%s\033[0m for merging into \033[1m%s\033[0m." \
+    "$REVIEW_SOURCE" \
+    "$REVIEW_TARGET"
 VIM_PLUGINS="onedark" \
 vim -S ~/.local/lib/vim/review.vim
 
