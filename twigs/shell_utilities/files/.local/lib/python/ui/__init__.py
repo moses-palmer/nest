@@ -86,6 +86,7 @@ def progress():
         clear()
         sys.stdout.write('\033[?25h')
 
+
 def tree(
     root: Any,
     leaves: Callable[[Any], List[Any]],
