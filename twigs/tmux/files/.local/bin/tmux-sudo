@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+## Runs sudo in a tmux popup.
+##
+## Usage: tmux-sudo PROMPT COMMAND...
+
+. ~/.local/lib/bash/autohelp
+
+
+PROMPT="$1"
+shift
+
+tmux display-popup \
+    -E \
+    -T "$PROMPT" \
+    -w 30% \
+    -h 20% \
+    sudo "$@"
