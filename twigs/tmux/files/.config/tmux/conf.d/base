@@ -47,6 +47,3 @@ set-option -wg window-status-format ' #W⎹'
 set-option -wg window-status-current-format ' #W⎹'
 set-option -g status-left ''
 set-option -g status-right '⎸ #H %H:%M'
-
-# Apply the non-nested style
-run-shell  'tmux-nested off'
