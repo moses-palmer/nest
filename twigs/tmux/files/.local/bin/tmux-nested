@@ -1,28 +1,30 @@
 #!/bin/sh
 
+alias ::='tmux show-option -sv'
 alias :='tmux set-option'
 case "$1" in
     on)
+        bg="$(:: @nested-inactive-bg)"
+        current="$(:: @nested-inactive-current)"
+        fg="$(:: @nested-inactive-fg)"
         : prefix None
         : key-table off
         : -g status-position bottom
-        : -g status-style bg=colour8,fg=white
-        : -g status-left-style fg=white,bold
-        : -g status-right-style fg=white,bold
-        : -wg window-status-current-style fg=white,bold,bg=colour246
-        : -wg window-status-style fg=white,bold
         ;;
     off)
+        bg="$(:: @nested-active-bg)"
+        current="$(:: @nested-active-current)"
+        fg="$(:: @nested-active-fg)"
         : -u prefix
         : -u key-table
         : -g status-position top
-        : -g status-style bg=green,fg=black
-        : -g status-left-style fg=black,bold
-        : -g status-right-style fg=black,bold
-        : -wg window-status-current-style fg=black,bold,bg=colour49
-        : -wg window-status-style fg=black,bold
         ;;
 esac
+: -g status-style bg=$bg,fg=$fg
+: -g status-left-style fg=$fg,bold
+: -g status-right-style fg=$fg,bold
+: -wg window-status-current-style fg=$fg,bold,bg=$current
+: -wg window-status-style fg=$fg,bold
 
 # Support running this command outside of a client session
 tmux refresh-client -S || true
