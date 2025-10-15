@@ -1,3 +1,11 @@
+# Set default colours
+set-option -s '@nested-active-bg' 'green'
+set-option -s '@nested-active-current' 'color49'
+set-option -s '@nested-active-fg' 'black'
+set-option -s '@nested-inactive-bg' 'color8'
+set-option -s '@nested-inactive-current' 'color246'
+set-option -s '@nested-inactive-fg' 'white'
+
 # Enable simple nested sessions
 bind -T root F12 run-shell -b 'tmux-nested on'
 bind -T off F12 run-shell -b 'tmux-nested off'
