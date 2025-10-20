@@ -22,6 +22,10 @@ clients = system.package(
     package='libvirt-clients',
     description='Programs for the libvirt library.') \
     .depends(main)
+guestmount = system.package(
+    package='guestmount',
+    description='FUSE-based mount utility for guest filesystems.') \
+    .depends(main)
 
 
 def domain(
