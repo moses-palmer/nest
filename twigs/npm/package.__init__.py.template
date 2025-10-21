@@ -1,0 +1,8 @@
+"""{description}
+"""
+
+from .. import npm
+
+
+main = npm.package(
+    name='{package}')
