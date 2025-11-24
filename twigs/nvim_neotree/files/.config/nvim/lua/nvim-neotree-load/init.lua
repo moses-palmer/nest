@@ -76,10 +76,12 @@ vim.api.nvim_create_autocmd('StdInReadPre', {
     end
 })
 local files_passed = vim.fn.filereadable(vim.v.argv[#vim.v.argv]) ~= 0
+local shell_window = vim.env.TMUX_PROJECT_STAGE == 'shell'
 vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
         if show_filetree or (
-                filetree_fits and not std_in and not files_passed) then
+                filetree_fits and not std_in and not files_passed
+                and not shell_window) then
             vim.fn.execute('Neotree reveal')
         end
     end,
