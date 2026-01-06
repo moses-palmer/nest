@@ -1,4 +1,6 @@
 # Enable programmable completion feature; this is probably already included
 if [ -f /usr/share/bash-completion/bash_completion ] && ! shopt -oq posix; then
     . /usr/share/bash-completion/bash_completion
+elif [ -f /opt/homebrew/etc/bash_completion ] && ! shopt -oq posix; then
+    . /opt/homebrew/etc/bash_completion
 fi
