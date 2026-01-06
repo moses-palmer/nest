@@ -12,6 +12,8 @@ if which wl-copy >/dev/null 2>&1 && [ -n "$WAYLAND_DISPLAY" ]; then
     tmux save-buffer - | wl-copy
 elif which xclip >/dev/null 2>&1 && [ -n "$DISPLAY" ]; then
     tmux save-buffer - | xclip -selection clipboard
+elif which pbcopy >/dev/null 2>&1; then
+    tmux save-buffer - | pbcopy
 else
     tmux display "No clipboard manager available."
 fi
