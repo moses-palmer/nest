@@ -1,0 +1,11 @@
+eval "$(brew shellenv)"
+
+# Also include Python binaries in the path
+PYTHON_VERSION="$(ls ~/Library/Python | sort -g | head -n1)"
+export PATH="$HOME/Library/Python/$PYTHON_VERSION/bin:$PATH"
+
+# Include GNU coreutils in the path
+export PATH="$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
+
+# Include GNU sed in the path
+export PATH="$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin:$PATH"

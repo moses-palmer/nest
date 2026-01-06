@@ -1,7 +1,13 @@
 #!/bin/sh
 
-if [ "$#" -gt 0 ]; then
-    gio open "$@"
+if [ "$(uname)" = "Darwin" ]; then
+    COMMAND="open"
 else
-    gio open "$(cat)"
+    COMMAND="gio open"
+fi
+
+if [ "$#" -gt 0 ]; then
+    $COMMAND "$@"
+else
+    $COMMAND "$(cat)"
 fi
