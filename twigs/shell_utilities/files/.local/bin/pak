@@ -61,6 +61,28 @@ elif which yum >/dev/null 2>&1; then
             | sort -n
     }
 
+elif which brew >/dev/null; then
+    packages() {
+        echo "This is not supported by Homebrew." >&2
+        exit 1
+    }
+
+    files() {
+        brew list "$1" | cat
+    }
+
+    info() {
+        brew info "$1"
+    }
+
+    by_size() {
+        brew info --formula --sizes \
+            | tail -n+2 \
+            | head -n-2 \
+            | awk '{print $2 " " $1}' \
+            | sort -h
+    }
+
 else
     echo "No supported package manager found."
     exit 1
