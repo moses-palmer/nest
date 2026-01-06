@@ -1,5 +1,7 @@
 """Iconic font aggregator, collection, and patcher."""
 
+import platform
+
 from nest import directories
 
 from .. import archive, ext
@@ -22,9 +24,17 @@ def _source(version):
     )(version)
 
 
+def _extract_to(version):
+    if platform.system() == 'Darwin':
+        # Use an absolute path, macOS fails to list symlinked fonts
+        return str(directories.HOME / 'Library' / 'Fonts')
+    else:
+        return str(directories.DATA / 'fonts')
+
+
 main = archive(
     source=_source,
-    extract_to=str(directories.DATA / 'fonts').format,
+    extract_to=_extract_to,
     extension='zip',
     latest_version=ext.github.latest_version(REPO),
 )
