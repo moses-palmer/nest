@@ -61,16 +61,8 @@ Do you still want to load the vim resource file?" \
 #
 # The arguments to this function should be the arguments to tmux just before
 # the command to launch bash.
-#
-# To pass the local environment we use --rcfile with a temporary FIFO to make
-# bash load normal startup files in addition to the current environment.
-#
-# We use a FIFO instead of <(...) since the command is executed by tmux and
-# file descriptors are not passed to the command in respawn-pane.
 tmux_project_shell() {
     rcfile="$(mktemp -u)"
-    mkfifo "$rcfile"
-    tmux "$@" bash --rcfile "$rcfile" -i
     cat > "$rcfile" <<___
 [ -f /etc/profile ]       && . /etc/profile
 [ -f ~/.bashrc ]          && . ~/.bashrc
@@ -84,5 +76,5 @@ if [ "\$TMUX_PROJECT_SHOW_VCS" = "yes" ]; then
 fi
 true
 ___
-    rm "$rcfile"
+    tmux "$@" bash --rcfile "$rcfile" -i
 }

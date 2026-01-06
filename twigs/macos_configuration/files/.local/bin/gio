@@ -1,0 +1,14 @@
+#!/bin/sh
+
+COMMAND="$1"
+shift
+
+case "$COMMAND" in
+    "open")
+        open "$@"
+        ;;
+    *)
+        echo "Unknown command: $COMMAND"
+        exit 1
+        ;;
+esac
