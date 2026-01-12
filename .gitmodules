@@ -70,3 +70,6 @@
 [submodule "twigs/nvim_codecompanion_nvim/files/.config/nvim/pack/nvim/start/codecompanion.nvim"]
 	path = twigs/nvim_codecompanion_nvim/files/.config/nvim/pack/nvim/start/codecompanion.nvim
 	url = https://github.com/olimorris/codecompanion.nvim
+[submodule "twigs/copilot/files/.config/nvim/pack/nvim/start/copilot.vim"]
+	path = twigs/copilot/files/.config/nvim/pack/nvim/start/copilot.vim
+	url = https://github.com/github/copilot.vim
