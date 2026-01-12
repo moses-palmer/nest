@@ -46,6 +46,12 @@ __GIT_COMMANDS=( \
 )
 
 ##
+# A list of commands that we allow overriding
+if [ -f ~/.config/git/command-overrides ]; then
+    mapfile -t __GIT_COMMAND_OVERRIDES < ~/.config/git/command-overrides
+fi
+
+##
 # The top level of the current repository.
 __GIT_TOPLEVEL=""
 
@@ -90,7 +96,7 @@ __git_register_command() {
     local completer="$2"
 
     # Do not shadow existing commands
-    if which "$command" >/dev/null 2>&1; then
+    if which "$command" >/dev/null 2>&1 && ! __git_override "$command"; then
         return
     else
         alias $1="git $command"
@@ -132,6 +138,12 @@ __git_unregister_command() {
 
 __aliases() {
     git config --get-regexp '^alias\.' | awk '{ print substr($1, 7);}'
+}
+
+
+__git_override() {
+    printf '%s\0' "${__GIT_COMMAND_OVERRIDES[@]}" \
+        | grep -F -x -z -- "$1" >/dev/null
 }
 
 
