@@ -67,3 +67,6 @@
 [submodule "twigs/nvim_plenary_nvim/files/.config/nvim/pack/nvim/start/plenary.nvim"]
 	path = twigs/nvim_plenary_nvim/files/.config/nvim/pack/nvim/start/plenary.nvim
 	url = https://github.com/nvim-lua/plenary.nvim
+[submodule "twigs/nvim_codecompanion_nvim/files/.config/nvim/pack/nvim/start/codecompanion.nvim"]
+	path = twigs/nvim_codecompanion_nvim/files/.config/nvim/pack/nvim/start/codecompanion.nvim
+	url = https://github.com/olimorris/codecompanion.nvim
