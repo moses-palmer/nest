@@ -73,3 +73,6 @@
 [submodule "twigs/copilot/files/.config/nvim/pack/nvim/start/copilot.vim"]
 	path = twigs/copilot/files/.config/nvim/pack/nvim/start/copilot.vim
 	url = https://github.com/github/copilot.vim
+[submodule "twigs/gemini/files/.config/nvim/pack/nvim/start/gemini.nvim"]
+	path = twigs/gemini/files/.config/nvim/pack/nvim/start/gemini.nvim
+	url = https://github.com/kiddos/gemini.nvim
