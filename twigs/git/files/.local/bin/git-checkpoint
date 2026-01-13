@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+#
+## Creates a checkpoint commit with current changes.
+##
+## This command is interactive; no unversioned files will be added without user
+## confirmation. The file ".git/checkpointignore" can be used to specify files
+## that should always be ignored.
+
+import subprocess
+
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import List, Tuple
+
+
+def main(root: Path):
+    try:
+        ignore_files = [
+            Path(line)
+            for line in (root / '.git/checkpointignore')
+                .read_text()
+                .splitlines()]
+    except FileNotFoundError:
+        ignore_files = []
+
+    files_to_add = [
+        path
+        for (is_versioned, path) in files()
+        if path not in ignore_files and check_addition((is_versioned, path))]
+    if files_to_add:
+        message = f'Checkpoint {datetime.now().isoformat(timespec='minutes')}'
+        subprocess.check_call(['git', 'add', *map(str, files_to_add)])
+        subprocess.check_call(['git', 'commit', '--message', message])
+    else:
+        print('No files to add.')
+
+
+def files() -> List[Tuple[str, Path]]:
+    for line in subprocess.check_output(
+            ['git', 'status', '--short']).decode('utf-8').splitlines():
+        status, filename = line.split(maxsplit=1)
+        yield status != '??', Path(filename)
+
+
+def check_addition(file: Tuple[bool, Path]) -> bool:
+    (is_versioned, filename) = file
+    return is_versioned or confirm_addition(filename)
+
+
+def confirm_addition(filename: Path) -> bool:
+    while True:
+        r = input(f'Add untracked file \033[0;32m{filename}\033[0m? [y/n] ')
+        match r.lower():
+            case 'yes' | 'y':
+                return True
+            case 'no' | 'n':
+                return False
+            case _:
+                print('Please answer "yes" or "no".')
+
+
+if __name__ == '__main__':
+    import os
+    main(Path(subprocess.check_output(['git', 'rev-parse', '--show-toplevel'])
+        .decode('utf-8')
+        .strip()))
