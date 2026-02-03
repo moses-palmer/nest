@@ -9,6 +9,3 @@ fi
     && . "$PROJECT_BASH_RC" \
     && export HISTFILE="$(tmux show-window-option \
         -v "$TMUX_PROJECT_HISTFILE_VAR" 2>/dev/null)"
-
-# This is the shell stage
-TMUX_PROJECT_STAGE="shell"
