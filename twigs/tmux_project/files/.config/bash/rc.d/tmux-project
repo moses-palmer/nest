@@ -1,3 +1,6 @@
+# This is the shell stage
+TMUX_PROJECT_STAGE="shell"
+
 # If this shell is launched in a tmux project, ensure to load the project
 # specific bash resource file
 if [ -n "$TMUX" ] && [ -z "$PROJECT_BASH_RC" ]; then
@@ -9,6 +12,3 @@ fi
     && . "$PROJECT_BASH_RC" \
     && export HISTFILE="$(tmux show-window-option \
         -v "$TMUX_PROJECT_HISTFILE_VAR" 2>/dev/null)"
-
-# This is the shell stage
-TMUX_PROJECT_STAGE="shell"

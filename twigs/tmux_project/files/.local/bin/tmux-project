@@ -1,17 +1,6 @@
 #!/bin/bash
 
 . ~/.config/tmux-project
-. ~/.local/lib/bash/tmux-project
-
-
-if [ "$1" = "--quit" ]; then
-    if tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
-        tmux kill-window
-    else
-        tmux display-message "This window does not contain any projects."
-    fi
-    exit
-fi
 
 
 if [ -d "$1" ]; then
@@ -63,6 +52,88 @@ tmux set-window-option \
 
 set -eu
 
+##
+# Determines whether the current window has a pane with of specific type.
+#
+# This is true if the tmux window option designated by $2 is set to an existing
+# pane.
+#
+# Arguments:
+# $1: The ID of the window to check.
+# $2: The type of pane.
+tmux_project_has_pane() {
+    local window="$1"
+    local var="$2"
+    local pane_id="$(tmux show-window-option -v -t "$window" "$var" \
+        2>/dev/null)"
+    [ -n "$pane_id" ] && tmux has-session -t "$pane_id"
+}
+
+
+##
+# Launches vim using tmux.
+#
+# The arguments to this function should be the arguments to tmux just before
+# the command to launch bash.
+#
+# This function assumes that $PROJECT_VIM_RC and $PROJECT_BASH_RC are set. If
+# the former exists, but the latter does not, the user will be queried whether
+# to load the vim resource file. If declined, the value of $PROJECT_VIM_RC will
+# be cleared.
+tmux_project_editor() {
+    if [ -f "$PROJECT_VIM_RC" ] && ! [ -f "$PROJECT_BASH_RC" ]; then
+        if [ "$(tmux-query \
+                --prompt \
+"This directory contains a vim resource file, but no project file.
+
+Do you still want to load the vim resource file?" \
+        yes no)" != "yes" ]; then
+            PROJECT_VIM_RC=""
+        fi
+    fi
+
+    tmux "$@" bash -lic "
+        export TMUX_PROJECT_STAGE=editor ;
+        [ -f $PROJECT_BASH_RC ] && . $PROJECT_BASH_RC ;
+        VIMINFO=\"$HOME/.cache/vim/viminfo/$PROJECT\" ;
+        if vim --version | grep -q NVIM; then
+            VIMINFO=\"\$VIMINFO.nvim\" ;
+        fi ;
+        if [ ! -f \"\$VIMINFO\" ]; then
+            mkdir -p \"\$(dirname \"\$VIMINFO\")\" && touch \"\$VIMINFO\" ;
+        fi ;
+        vim \
+            -i \"\$VIMINFO\" \
+            +'set viminfo+=% | rviminfo \
+            | if filereadable(\"$PROJECT_VIM_RC\") \
+                | source $PROJECT_VIM_RC'"
+}
+
+
+##
+# Starts a shell using tmux.
+#
+# The arguments to this function should be the arguments to tmux just before
+# the command to launch bash.
+tmux_project_shell() {
+    rcfile="$(mktemp -u)"
+    cat > "$rcfile" <<___
+[ -f /etc/profile ]       && . /etc/profile
+[ -f ~/.bashrc ]          && . ~/.bashrc
+if [ "\$TMUX_PROJECT_SHOW_HIDDEN" = "yes" ]; then
+    export FZF_DEFAULT_COMMAND="\$FZF_DEFAULT_COMMAND --hidden"
+    export FZF_SEARCH_COMMAND="\$FZF_SEARCH_COMMAND --hidden"
+fi
+if [ "\$TMUX_PROJECT_SHOW_VCS" = "yes" ]; then
+    export FZF_DEFAULT_COMMAND="\$FZF_DEFAULT_COMMAND --no-ignore-vcs"
+    export FZF_SEARCH_COMMAND="\$FZF_SEARCH_COMMAND --no-ignore-vcs"
+fi
+true
+___
+    tmux "$@" bash --rcfile "$rcfile" -i
+    ( sleep 5 && rm "$rcfile" ) &
+    disown
+}
 
 ##
 # Launches vim in a new pane and outputs its ID to STDOUT.
@@ -101,6 +172,17 @@ launch_shell() {
         -t "$PANE" \
         -P -F "#{pane_id}"
 }
+
+
+# Close the window if it contains an open project and --quit is specified
+if [ "$1" = "--quit" ]; then
+    if tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
+        tmux kill-window
+    else
+        tmux display-message "This window does not contain any projects."
+    fi
+    exit
+fi
 
 
 # Make sure we have a local history file
