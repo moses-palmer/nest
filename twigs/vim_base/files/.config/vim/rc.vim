@@ -4,6 +4,11 @@ if has('syntax')
     filetype plugin indent on
 endif
 
+" Enable global window borders for nvim 0.11
+if has('nvim-0.11')
+    set winborder=rounded
+endif
+
 
 set backspace=indent,eol,start
 set backupdir=~/.cache/vim/backup//
