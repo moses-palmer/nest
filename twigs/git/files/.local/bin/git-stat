@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+
+import base64
+import math
+import os
+import random
+import shutil
+import subprocess
+import sys
+import unicodedata
+
+
+#: The number of columns in the terminal.
+COLUMNS = int(os.getenv('COLUMNS') or shutil.get_terminal_size().columns)
+
+#: The maximum number of file clusters to display
+CLUSTERS_LIMIT = int(os.getenv('GIT_STAT_CLUSTERS_LIMIT') or 5)
+
+#: The maximum number of most modified files to display
+MOST_MODIFIED_LIMIT = int(os.getenv('GIT_STAT_MOST_MODIFIED_LIMIT') or 20)
+
+
+def main(*args):
+    for arg in args or ('activity', 'most-modified', 'clusters'):
+        match arg:
+            case 'activity':
+                activity()
+            case 'clusters':
+                clusters()
+            case 'contributors':
+                contributors()
+            case 'most-modified':
+                most_modified()
+            case _:
+                print(f'Unknown command: {arg}')
+                sys.exit(1)
+        print()
+
+
+def activity():
+    print('Activity by month:')
+
+    cache = {}
+    for line in git(
+            'log',
+            '--format=%ad',
+            '--date=format:%Y-%m').splitlines():
+        if line:
+            cache[line] = cache.get(line, 0) + 1
+    data = sorted(
+        cache.items(),
+        key=lambda v: v[0])
+    d = max(v for _, v in data)
+    header_width = max(len(k) for k, _ in data) + 1
+
+    for v, c in data:
+        report(v, header_width, c / d)
+
+
+def clusters():
+    print('Files commonly modified together:')
+
+    # Generate a random commit separator
+    separator = base64.b64encode(random.randbytes(64)).decode('utf-8')
+
+    # Map each file to the set of commits it appears in
+    commits_for_path = {}
+    for commit, paths in enumerate(
+            [
+                line.strip()
+                for line in commit.splitlines()
+                if line.strip()]
+            for commit in git(
+                'log',
+                '--format=format:' + separator,
+                '--name-only').split(separator)):
+        for path in paths:
+            commits_for_path.setdefault(path, set()).add(commit)
+
+    # Group files that appear in the exact same set of commits
+    paths_for_commits = {}
+    for path, commits in commits_for_path.items():
+        paths_for_commits.setdefault(frozenset(commits), []).append(path)
+
+    # Keep groups with more than one file, sorted by commit count
+    data = sorted(
+        (
+            (commits, paths)
+            for commits, paths in paths_for_commits.items()
+            if len(paths) > 1),
+        key=lambda v: len(v[0]),
+        reverse=True)[:CLUSTERS_LIMIT]
+
+    for (commits, paths) in data:
+        print(
+            f'  Together in {len(commits)} '
+            f'{["commit", "commits"][len(commits) > 1]}:')
+        for path in sorted(paths):
+            print(f'  • {path}')
+
+
+def most_modified():
+    print('Most modified files:')
+
+    cache = {}
+    for line in git(
+            'log',
+            '--format=format:',
+            '--name-only',
+            '--since=1 year ago').splitlines():
+        if line:
+            cache[line] = cache.get(line, 0) + 1
+    data = sorted(
+        cache.items(),
+        reverse=True,
+        key=lambda v: v[1])[:MOST_MODIFIED_LIMIT]
+    d = max(v for _, v in data)
+    header_width = max(len(k) for k, _ in data) + 1
+
+    for v, c in data:
+        report(v, header_width, c / d)
+
+
+def contributors():
+    print('Most active contributors:')
+
+    cache = {}
+    for line in git(
+            'shortlog',
+            '--numbered',
+            '--summary',
+            '--no-merges').splitlines():
+        parts = line.split(maxsplit=1)
+        d = int(parts[0])
+        v = unicodedata.normalize('NFC', parts[1])
+        cache[v] = int(d)
+    data = sorted(
+        cache.items(),
+        reverse=True,
+        key=lambda v: v[1])
+    d = max(v for _, v in data)
+    header_width = max(len(k) for k, _ in data) + 1
+
+    for v, c in data:
+        report(v, header_width, c / d)
+
+
+def git(*args) -> str:
+    return subprocess.check_output(['git'] + list(args)).decode('-utf-8')
+
+
+def report(header: str, header_width: int, f: float):
+    width = f * (COLUMNS - header_width)
+
+    gauge = '█' * math.floor(width)
+    fract = width % 1
+    if fract > 0:
+        partials = '▏▎▍▌▋▊▉'
+        text = gauge + partials[math.floor(fract * len(partials))]
+    else:
+        text = gauge
+
+    print(f'{header:∙<{header_width}}{text}')
+
+
+if __name__ == '__main__':
+    main(*sys.argv[1:])
