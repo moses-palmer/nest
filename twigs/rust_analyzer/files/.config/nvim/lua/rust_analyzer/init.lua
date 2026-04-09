@@ -1,4 +1,4 @@
 vim.lsp.config('rust_analyzer', {
-    capabilities = require'cmp_nvim_lsp'.default_capabilities()
+    capabilities = require'nvim-lspconfig-load'.capabilities(),
 })
 vim.lsp.enable('rust_analyzer')
