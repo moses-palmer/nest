@@ -133,6 +133,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', '<M-K>', vim.diagnostic.open_float, options)
         vim.keymap.set('n', '<M-Down>', vim.diagnostic.goto_next, options)
         vim.keymap.set('n', '<M-Up>', vim.diagnostic.goto_prev, options)
+
+        vim.keymap.set('n', '<M-i>', function()
+            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+        end, options)
     end
 })
 
