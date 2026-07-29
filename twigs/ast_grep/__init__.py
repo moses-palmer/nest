@@ -6,4 +6,4 @@ from .. import Twig, build_environment, rust
 
 main = rust.crate(
     name='ast-grep',
-    completions=['sg', 'completions', 'bash'])
+    completions=['ast-grep', 'completions', 'bash'])
