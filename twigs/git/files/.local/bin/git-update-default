@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+## Updates the default branch to the first merge commit fround from HEAD.
+
+set -e
+. ~/.local/lib/bash/autohelp
+
+
+DEFAULT_BRANCH="$(git default-branch)"
+TARGET_COMMIT="$(git log --merges --max-count=1 --pretty=format:%H)"
+
+if git show "$TARGET_COMMIT" 2>/dev/null; then
+    git branch -f "$DEFAULT_BRANCH" "$TARGET_COMMIT"
+else
+    echo "No merge commit found."
+fi
