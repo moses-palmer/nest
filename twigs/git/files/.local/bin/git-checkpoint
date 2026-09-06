@@ -10,24 +10,26 @@ import subprocess
 
 from datetime import datetime
 from enum import Enum
+from fnmatch import fnmatch
 from pathlib import Path
-from typing import List, Tuple
+from typing import Generator, Tuple
 
 
 def main(root: Path):
     try:
-        ignore_files = [
-            Path(line)
+        ignore_globs = [
+            line
             for line in (root / '.git/checkpointignore')
                 .read_text()
                 .splitlines()]
     except FileNotFoundError:
-        ignore_files = []
+        ignore_globs = []
 
     files_to_add = [
         path
         for (is_versioned, path) in files()
-        if path not in ignore_files and check_addition((is_versioned, path))]
+        if not any(fnmatch(str(path), glob) for glob in ignore_globs)
+            and check_addition((is_versioned, path))]
     if files_to_add:
         message = f'Checkpoint {datetime.now().isoformat(timespec='minutes')}'
         subprocess.check_call(['git', 'add', *map(str, files_to_add)])
@@ -36,7 +38,7 @@ def main(root: Path):
         print('No files to add.')
 
 
-def files() -> List[Tuple[str, Path]]:
+def files() -> Generator[Tuple[bool, Path], None, None]:
     for line in subprocess.check_output(
             ['git', 'status', '--short']).decode('utf-8').splitlines():
         status, filename = line.split(maxsplit=1)
@@ -55,9 +57,16 @@ def confirm_addition(filename: Path) -> bool:
             case 'yes' | 'y':
                 return True
             case 'no' | 'n':
+                if confirm_addition._notify:
+                    confirm_addition._notify = False
+                    print(
+                        'Add this file, or a glob, to .git/checkpointignore to '
+                        'ignore forever.',
+                    )
                 return False
             case _:
                 print('Please answer "yes" or "no".')
+confirm_addition._notify = True
 
 
 if __name__ == '__main__':
