@@ -1,6 +1,6 @@
 local bundles = {
     vim.fn.glob(
-        '~/.local/lib/jdtls/plugins/com.microsoft.java.debug.plugin-*.jar', 1),
+        '~/.local/lib/jdtls/plugins/bundles/*.jar', 1),
 }
 require('jdtls').start_or_attach({
     cmd = {'jdtls'},
