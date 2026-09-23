@@ -24,8 +24,8 @@ SOURCE = 'https://www.eclipse.org/downloads/download.php?' \
 #: The target directory for extracted files.
 TARGET_DIR = directories.LIB / 'jdtls'
 
-#: The directory containing plugins.
-PLUGINS_DIR = TARGET_DIR / 'plugins'
+#: The directory containing plugin bundles.
+PLUGINS_DIR = TARGET_DIR / 'plugins' / 'bundles'
 
 #: The Github repository.
 REPO = 'eclipse-jdtls/eclipse.jdt.ls'
