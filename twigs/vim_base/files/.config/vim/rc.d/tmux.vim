@@ -26,7 +26,7 @@ command! -nargs=1 TmuxCopyPath call <SID>tmux_copy_path(<args>)
 
 " Determines whether the current tmux pane is zoomed.
 function! tmux#zoomed()
-    return s:tmux('display-message -p "#{window_zoomed_flag}"') == '1'
+    return trim(s:tmux('display-message -p "#{window_zoomed_flag}"')) == '1'
 endfunction
 
 
