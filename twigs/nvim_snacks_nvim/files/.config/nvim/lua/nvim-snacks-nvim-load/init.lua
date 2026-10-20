@@ -58,11 +58,20 @@ vim.keymap.set('n', '<leader><C-p>', function(opts, ctx)
     }
 end)
 
+local zen_fullscreen_state = nil
 vim.keymap.set('n', '<leader>z', function()
     local zen = require'snacks.zen'
-    local visible = zen.win and zen.win:valid()
-    if visible ~= vim.fn['tmux#zoomed']() then
-        vim.fn['tmux#toggle_zoomed']()
+    local has_window = zen.win and zen.win:valid() or false
+    local has_fullscreen = vim.fn['tmux#zoomed']() == 1
+    if not has_window then
+        zen_fullscreen_state = has_fullscreen
+        if not has_fullscreen then
+            vim.fn['tmux#toggle_zoomed']()
+        end
+    else
+        if has_fullscreen and not zen_fullscreen_state then
+            vim.fn['tmux#toggle_zoomed']()
+        end
     end
     zen {
         win = {
