@@ -1,217 +1,347 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-. ~/.config/tmux-project
+import os
+import re
+import shlex
+import sys
 
+from dataclasses import dataclass
+from enum import Enum
+from pathlib import Path
+from typing import Iterator, Optional, Type
 
-ROOT="${1:-$(pwd)}"
-WINDOW="${2:-$(tmux display-message -p "#{window_id}")}"
-PANE="${3:-$(tmux display-message -p "#{pane_id}")}"
+sys.path.append(str(Path.home() / '.local' / 'lib' / 'python'))
 
-
-##
-# A project local bash resource file.
-PROJECT_BASH_RC="$ROOT/$TMUX_PROJECT_FILE"
-[ -f "$PROJECT_BASH_RC" ] \
-    && TMUX_PROJECT_STAGE=main . "$PROJECT_BASH_RC" \
-    && tmux set-window-option \
-        "$TMUX_PROJECT_FILE_VAR" "$PROJECT_BASH_RC"
-
-##
-# A project local vim resource file.
-PROJECT_VIM_RC="$ROOT/.vimrc"
-
-##
-# The name of the current project.
-PROJECT="${PROJECT:-$(basename "$ROOT")}"
-
-##
-# The icon displayed for the window.
-ICON="${ICON:-}"
-
-##
-# The width of the editor pane.
-WIDTH="${WIDTH:-60%}"
-
-##
-# The command used by fzf to search for files in the project.
-FZF_DEFAULT_COMMAND="${FZF_DEFAULT_COMMAND:-}"
-FZF_SEARCH_COMMAND="${FZF_SEARCH_COMMAND:-}"
-if [ "$TMUX_PROJECT_SHOW_HIDDEN" = "yes" ]; then
-    export FZF_DEFAULT_COMMAND="$FZF_DEFAULT_COMMAND --hidden"
-    export FZF_SEARCH_COMMAND="$FZF_SEARCH_COMMAND --hidden"
-fi
-if [ "$TMUX_PROJECT_SHOW_VCS" = "yes" ]; then
-    export FZF_DEFAULT_COMMAND="$FZF_DEFAULT_COMMAND --no-ignore-vcs"
-    export FZF_SEARCH_COMMAND="$FZF_SEARCH_COMMAND --no-ignore-vcs"
-fi
-
-##
-# A project local bash history file.
-PROJECT_BASH_HISTFILE="$HOME/.cache/bash/history/$PROJECT"
-tmux set-window-option \
-    "$TMUX_PROJECT_HISTFILE_VAR" "$PROJECT_BASH_HISTFILE"
-
-set -eu
-
-##
-# Determines whether the current window has a pane with of specific type.
-#
-# This is true if the tmux window option designated by $2 is set to an existing
-# pane.
-#
-# Arguments:
-# $1: The ID of the window to check.
-# $2: The type of pane.
-tmux_project_has_pane() {
-    local window="$1"
-    local var="$2"
-    local pane_id="$(tmux show-window-option -v -t "$window" "$var" \
-        2>/dev/null)"
-    [ -n "$pane_id" ] && tmux has-session -t "$pane_id"
-}
+import fzf
+import tmux
 
 
-##
-# Launches vim using tmux.
-#
-# The arguments to this function should be the arguments to tmux just before
-# the command to launch bash.
-#
-# This function assumes that $PROJECT_VIM_RC and $PROJECT_BASH_RC are set. If
-# the former exists, but the latter does not, the user will be queried whether
-# to load the vim resource file. If declined, the value of $PROJECT_VIM_RC will
-# be cleared.
-tmux_project_editor() {
-    if [ -f "$PROJECT_VIM_RC" ] && ! [ -f "$PROJECT_BASH_RC" ]; then
-        if [ "$(tmux-query \
-                --prompt \
-"This directory contains a vim resource file, but no project file.
+#: The name of the project file.
+PROJECT_FILE = '.tmux-project'
 
-Do you still want to load the vim resource file?" \
-        yes no)" != "yes" ]; then
-            PROJECT_VIM_RC=""
-        fi
-    fi
+#: The environment variable signalling that hidden files should be shown.
+SHOW_HIDDEN_ENV = 'TMUX_PROJECT_SHOW_HIDDEN'
 
-    tmux "$@" \
-        -e "HISTFILE=$PROJECT_BASH_HISTFILE"  \
-        -e "FZF_DEFAULT_COMMAND=$FZF_DEFAULT_COMMAND" \
-        -e "FZF_SEARCH_COMMAND=$FZF_SEARCH_COMMAND" \
-        -e "TMUX_PROJECT_STAGE=editor" \
-        bash -lic "
-        [ -f $PROJECT_BASH_RC ] && . $PROJECT_BASH_RC ;
-        VIMINFO=\"$HOME/.cache/vim/viminfo/$PROJECT\" ;
-        if vim --version | grep -q NVIM; then
-            VIMINFO=\"\$VIMINFO.nvim\" ;
-        fi ;
-        if [ ! -f \"\$VIMINFO\" ]; then
-            mkdir -p \"\$(dirname \"\$VIMINFO\")\" && touch \"\$VIMINFO\" ;
-        fi ;
-        vim \
-            -i \"\$VIMINFO\" \
-            +'set viminfo+=% | rviminfo \
-            | if filereadable(\"$PROJECT_VIM_RC\") \
-                | source $PROJECT_VIM_RC'"
-}
+#: The environment variable signalling that version control files should be
+#: shown.
+SHOW_VCS_ENV = 'TMUX_PROJECT_SHOW_VCS'
+
+#: The environment variable for the local bash rc file.
+BASH_RC_ENV = 'TMUX_PROJECT_BASH_RC'
+
+#: The default command used by fzf.
+FZF_DEFAULT_COMMAND_ENV = 'FZF_DEFAULT_COMMAND'
+
+#: The special search command used by fzf.
+FZF_SEARCH_COMMAND_ENV = 'FZF_SEARCH_COMMAND'
+
+#: The regular expression used to extract configuration values from the project
+#: file.
+CONFIGURATION_RE = re.compile(r'^(?:export\s+)?([\w]+)=(.*)')
+
+#: The window option that contains the editor pane.
+PROJECT_EDITOR_VAR = '@__project_editor'
+
+#: The window option that contains the shell pane.
+PROJECT_SHELL_VAR = '@__project_shell'
+
+#: The window option that contains the resource file.
+PROJECT_RC_VAR = '@__project_bash_rc'
+
+#: The split to use between panes.
+SPLIT = tmux.Pane.Split.HORIZONTAL
+
+#: The split order of the shell pane.
+SHELL_ORDER = tmux.Pane.Split.Order.AFTER
 
 
-##
-# Starts a shell using tmux.
-#
-# The arguments to this function should be the arguments to tmux just before
-# the command to launch bash.
-tmux_project_shell() {
-    tmux "$@" \
-        -e "HISTFILE=$PROJECT_BASH_HISTFILE"  \
-        -e "FZF_DEFAULT_COMMAND=$FZF_DEFAULT_COMMAND" \
-        -e "FZF_SEARCH_COMMAND=$FZF_SEARCH_COMMAND" \
-        -e "TMUX_PROJECT_STAGE=shell" \
-        bash -il
-}
+class Stage(Enum):
+    """The stage for a pane."""
 
-##
-# Launches vim in a new pane and outputs its ID to STDOUT.
-launch_editor() {
-    tmux_project_editor split-window \
-        -b \
-        -c "$ROOT" \
-        -f \
-        -h \
-        -t "$PANE" \
-        -P -F "#{pane_id}"
-}
+    #: The shell pane.
+    SHELL = 'shell'
+
+    #: The editor pane.
+    EDITOR = 'editor'
 
 
-##
-# Replaces the shell in the original pane and outputs its ID to STDOUT.
-replace_shell() {
-    tmux_project_shell respawn-pane \
-        -c "$ROOT" \
-        -k \
-        -t "$PANE"
-    echo "$PANE"
-}
+@dataclass
+class Configuration:
+    #: Whether this configuration was read from a file.
+    from_file: bool
+
+    #: The project root
+    root: Path
+
+    #: The project name.
+    name: str
+
+    # The project icon.
+    icon: str
+
+    #: The width of the editor window.
+    width: str
+
+    #: Whether to show hidden files in fzf / rg.
+    show_hidden: bool
+
+    #: Whether to show version control files in fzf / rg.
+    show_vcs: bool
+
+    @classmethod
+    def load(cls, root: Path) -> Configuration:
+        project_file = root / PROJECT_FILE
+        try:
+            values = {
+                m.group(1): shlex.split(m.group(2))
+                for m in (
+                    CONFIGURATION_RE.match(line.rstrip())
+                    for line in project_file.read_text().splitlines()
+                    if line.strip()
+                )
+                if m
+            }
+            from_file = True
+        except FileNotFoundError:
+            values = {}
+            from_file = False
+
+        def value(name: str, default: str) -> str:
+            return ''.join(values.get(name, [os.environ.get(name, default)]))
+
+        return Configuration(
+            from_file=from_file,
+            root=root,
+            name=' '.join(values.get('PROJECT', [root.name])),
+            icon=' '.join(values.get('ICON', [''])),
+            width=' '.join(values.get('WIDTH', ['60%'])),
+            show_hidden=value(SHOW_HIDDEN_ENV, 'no') == 'yes',
+            show_vcs=value(SHOW_VCS_ENV, 'no') == 'yes',
+        )
+
+    @property
+    def display(self) -> str:
+        return f'{self.icon} {self.name}'
+
+    @property
+    def bash_rc(self) -> Path:
+        return self.root / PROJECT_FILE
+
+    @property
+    def env(self) -> dict[str, str]:
+        def extend(name: str, *clauses: tuple[bool, str]) -> str:
+            return os.environ.get(name, '') + ' '.join(
+                value for (condition, value) in clauses if condition
+            )
+
+        return {
+            'HISTFILE': str(Path.home() / '.cache' / 'bash' / self.name),
+            'PROJECT': self.name,
+            BASH_RC_ENV: str(self.bash_rc),
+            FZF_DEFAULT_COMMAND_ENV: extend(
+                FZF_DEFAULT_COMMAND_ENV,
+                (self.show_hidden, '--hidden'),
+                (self.show_vcs, '--no-ignore-vcs'),
+            ),
+            FZF_SEARCH_COMMAND_ENV: extend(
+                FZF_SEARCH_COMMAND_ENV,
+                (self.show_hidden, '--hidden'),
+                (self.show_vcs, '--no-ignore-vcs'),
+            ),
+        }
 
 
-##
-# Launches a new shell and outputs its ID to STDOUT.
-launch_shell() {
-    tmux_project_shell split-window \
-        -c "$ROOT" \
-        -f \
-        -h \
-        -t "$PANE" \
-        -P -F "#{pane_id}"
-}
+def open(server: tmux.Server, project_root: Optional[Path], replace: bool):
+    if project_root is not None and not replace:
+        window = server.current_session.new_window(cwd=project_root)
+        window.activate()
+    else:
+        project_root = project_root or Path.cwd()
+        window = server.current_session.current_window
+    configuration = Configuration.load(project_root)
+
+    window.name = configuration.display
+    window.options[PROJECT_RC_VAR] = configuration.bash_rc
+    if not window.is_project_window():
+        # Make sure we only have the current pane remaining in the window
+        shell_pane = window.current_pane
+        for pane in window.panes:
+            if pane != shell_pane:
+                pane.kill()
+
+        window.options['main-pane-width'] = configuration.width
+        window.start_editor(configuration)
+        window.restore_layout(configuration)
+
+        # Replacing the shell in the current pane will cause this process to
+        # terminate
+        shell_pane.replace_shell(configuration)
+    else:
+        if not window.has_pane(PROJECT_SHELL_VAR):
+            window.start_shell(configuration)
+        if not window.has_pane(PROJECT_EDITOR_VAR):
+            window.start_editor(configuration)
+
+        window.restore_layout(configuration)
 
 
-# Close the window if it contains an open project and --quit is specified
-if [ "$1" = "--quit" ]; then
-    if tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
-        tmux kill-window
-    else
-        tmux display-message "This window does not contain any projects."
-    fi
-    exit
-fi
+def quit(server: tmux.Server):
+    window = server.current_session.current_window
+    if not window.is_project_window():
+        server.notify('This window does not contain a project.')
+    else:
+        window.kill()
 
 
-# Make sure we have a local history file
-if [ ! -f "$PROJECT_BASH_HISTFILE" ]; then
-    [ -f ~/.bash_history ] && cp ~/.bash_history "$PROJECT_BASH_HISTFILE"
-fi
+def select(server: tmux.Server):
+    level_max = 3
 
-# If the window is not currently an editor window, make it one
-if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_EDITOR_VAR"; then
-    # Launch the editor pane and mark this window as an editor window
-    tmux set-window-option \
-        -t "$WINDOW" \
-        "$TMUX_PROJECT_EDITOR_VAR" \
-        "$(launch_editor)"
+    def list_files(root: Path, level: int = 0) -> Iterator[str]:
+        if level < level_max:
+            for p in root.iterdir():
+                if p.is_dir() and Configuration.load(p).from_file:
+                    yield str(p)
+                elif p.is_dir():
+                    yield from list_files(p, level + 1)
 
-    # Replace the shell in the current pane
-    if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_SHELL_VAR"; then
-        if [ -z "${TMUX_PROJECT_FORCE_NEW_SHELL+x}" ]; then
-            tmux set-window-option \
-                -t "$WINDOW" \
-                "$TMUX_PROJECT_SHELL_VAR" \
-                "$(replace_shell)"
-        fi
-    fi
-fi
+    def preview(root: str):
+        project_file = Path(root) / PROJECT_FILE
+        return f'''
+# {root}
 
-# If the window does not currently have a shell, launch one
-if ! tmux_project_has_pane "$WINDOW" "$TMUX_PROJECT_SHELL_VAR"; then
-    tmux set-window-option \
-        -t "$WINDOW" \
-        "$TMUX_PROJECT_SHELL_VAR" \
-        "$(launch_shell)"
-fi
+{project_file.read_text() if project_file.exists() else ''}
+        '''
+
+    project_root = fzf.select(
+        list_files(Path.home()),
+        title='Open project',
+        display=lambda p: Configuration.load(Path(p)).display,
+        preview=preview,
+    )
+
+    if project_root:
+        open(server, Path(project_root), False)
 
 
-# Rename window to make it easier to find and apply the fixed layout
-tmux rename-window -t "$WINDOW" "$ICON $PROJECT"
-tmux set-window-option \
-    main-pane-width "$WIDTH"
-tmux select-layout \
-    main-vertical
+def extend(cls: Type):
+    return lambda meth: setattr(cls, meth.__name__.split('_', 1)[-1], meth)
+
+
+@extend(tmux.Window)
+def window_start_editor(self, configuration: Configuration):
+    """Starts the editor by splitting the current pane."""
+    if configuration.from_file:
+        read_vimrc = True
+    elif (configuration.root / '.vimrc').exists():
+        read_vimrc = self.server.query(
+            '''
+            This directory contains a vim resource file, but no project
+            file.
+
+            Do you still want to load the vim resource file?
+            ''',
+            'yes', 'no') == 'yes'
+    else:
+        read_vimrc = False
+
+    pane = self.current_pane.split(
+        SPLIT,
+        ~SHELL_ORDER,
+        command=['tmux-project-editor'],
+        cwd=configuration.root,
+        full=True,
+        TMUX_PROJECT_STAGE=Stage.EDITOR.value,
+        READ_VIMRC='yes' if read_vimrc else 'no',
+        **configuration.env,
+    )
+    self.options[PROJECT_EDITOR_VAR] = pane.id
+    pane.activate()
+
+
+@extend(tmux.Window)
+def window_start_shell(self, configuration: Configuration):
+    self.options[PROJECT_SHELL_VAR] = self.current_pane.split(
+        SPLIT,
+        SHELL_ORDER,
+        command=['bash', '-il'],
+        size=configuration.width,
+        cwd=configuration.root,
+        TMUX_PROJECT_STAGE=Stage.SHELL.value,
+        **configuration.env,
+    ).id
+
+
+@extend(tmux.Window)
+def window_restore_layout(self, configuration: Configuration):
+    self.apply_layout(tmux.Window.PresetLayout.MAIN_VERTICAL)
+
+
+@extend(tmux.Window)
+def window_is_project_window(self) -> bool:
+    options = self.options
+    return any(v in options for v in (PROJECT_EDITOR_VAR, PROJECT_SHELL_VAR))
+
+
+@extend(tmux.Window)
+def window_has_pane(self, pane_var: str) -> bool:
+    try:
+        return self.child(self.options[pane_var]) is not None
+    except KeyError:
+        return False
+
+
+@extend(tmux.Pane)
+def pane_replace_shell(self, configuration: Configuration):
+    """Replaces the shell in this pane."""
+    self.parent.options[PROJECT_SHELL_VAR] = self.id
+    self.respawn(
+        command=['bash', '-il'],
+        cwd=configuration.root,
+        TMUX_PROJECT_STAGE=Stage.SHELL.value,
+        **configuration.env,
+    )
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Manages project using tmux and vim'
+    )
+    parser.set_defaults(server=tmux.Server())
+
+    subparsers = parser.add_subparsers(required=True)
+
+    open_parser = subparsers.add_parser(
+        'open',
+        help='Opens a specific project in this window, or resets the layout.',
+    )
+    open_parser.add_argument(
+        '--project-root',
+        help='The project root directory. If not specified, the current '
+        'directory is used, and the current window is replaced.',
+        type=Path,
+        required=False,
+    )
+    open_parser.add_argument(
+        '--replace',
+        help='Always replace the current window layout, even if --project-root '
+        'is specified.',
+        action='store_true',
+    )
+    open_parser.set_defaults(main=open)
+
+    quit_parser = subparsers.add_parser(
+        'quit',
+        help='Closes the current window if it is a project window.',
+    )
+    quit_parser.set_defaults(main=quit)
+
+    select_parser = subparsers.add_parser(
+        'select',
+        help='Opens a popup to select a project to open in a new window.',
+    )
+    select_parser.set_defaults(main=select)
+
+    args = vars(parser.parse_args())
+    args.pop('main')(**args)
