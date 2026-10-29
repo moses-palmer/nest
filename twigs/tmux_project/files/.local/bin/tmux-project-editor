@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+[ -f ~/.bashrc ] && . ~/.bashrc
+[ -f .tmux-project ] && . ./.tmux-project
+
+VIMINFO="$HOME/.cache/vim/viminfo/$PROJECT.nvim"
+if [ ! -f "$VIMINFO" ]; then
+    mkdir -p "$(dirname "$VIMINFO")" && touch "$VIMINFO"
+fi
+
+nvim \
+    -i "$VIMINFO" \
+    +'set viminfo+=% | rviminfo' \
+    +'if $READ_VIMRC == "yes" && filereadable(".vimrc") | source .vimrc'
