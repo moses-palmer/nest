@@ -1,7 +1,8 @@
-# Start a new editor session in the current directory
 bind-key C-e run-shell \
-    -b \
-    '~/.local/bin/tmux-project "#{pane_current_path}" "#{window_id}" "#{pane_id}"'
-
+    '~/.local/bin/tmux-project open \
+        --project-root="#{pane_current_path}" \
+        --replace'
 bind-key C-q run-shell \
-    '~/.local/bin/tmux-project --quit'
+    '~/.local/bin/tmux-project quit'
+bind-key C-s run-shell \
+    '~/.local/bin/tmux-project select'
