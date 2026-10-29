@@ -1,0 +1,20 @@
+#!/bin/bash
+
+PROJECT_BASH_RC="$1"
+[ -f "$PROJECT_BASH_RC" ] && TMUX_PROJECT_STAGE=main . "$PROJECT_BASH_RC" \
+    >/dev/null 2>&1
+
+case "$2" in
+    icon)
+        echo "${ICON:-}"
+        ;;
+    name)
+        echo "${PROJECT:-$(basename "$(dirname "$1")")}"
+        ;;
+    width)
+        echo "${WIDTH:-60%}"
+        ;;
+    *)
+        exit 1
+        ;;
+esac

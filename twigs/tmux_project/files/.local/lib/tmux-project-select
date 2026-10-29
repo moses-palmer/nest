@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -eu
+
+
+##
+# The maximum depth from the root of the home directory to search.
+MAX_DEPTH=3
+
+DIRNAME="\$(dirname "{}")"
+ICON="\$(__tmux-project-attr "{}" icon)"
+NAME="\$(__tmux-project-attr "{}" name)"
+CMD="printf \"$DIRNAME\t$ICON $NAME\n\""
+
+ROOT="$(find "$HOME" \
+    -maxdepth "$MAX_DEPTH" \
+    -name "$TMUX_PROJECT_FILE" \
+    -exec sh -c "$CMD" \; \
+    | fzf \
+        --delimiter='\t' \
+        --accept-nth=1 \
+        --with-nth=2 \
+        --popup \
+        --preview='cat {1}/.tmux-project' \
+    || true)"
+if [ -d "$ROOT" ]; then
+    tmux new-window \
+        -n "$(eval "$ICON $NAME")" \
+        -e "TMUX_PROJECT_FORCE_NEW_SHELL=yes" \
+        -e "TMUX_PROJECT_ROOT=$ROOT" \
+        tmux-project open
+fi
